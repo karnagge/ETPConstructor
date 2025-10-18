@@ -1,0 +1,109 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== MODELS ====================
+
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  nome      String
+  criadoEm  DateTime @default(now()) @map("criado_em")
+  
+  projetos   Projeto[]
+  documentos Documento[]
+  
+  @@map("usuarios")
+}
+
+model Projeto {
+  id        String   @id @default(uuid())
+  uuid      String   @unique @default(uuid())
+  nome      String
+  descricao String?
+  cor       String   @default("#3b82f6")
+  criadoEm  DateTime @default(now()) @map("criado_em")
+  
+  usuarioId String   @map("usuario_id")
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  documentos Documento[]
+  
+  @@index([usuarioId])
+  @@map("projetos")
+}
+
+model Documento {
+  id               String           @id @default(uuid())
+  uuid             String           @unique @default(uuid())
+  titulo           String
+  tipo             String           @default("ETP")
+  status           StatusDocumento  @default(RASCUNHO)
+  dadosColetados   Json             @default("{}") @map("dados_coletados")
+  conteudoSecoes   Json             @default("{}") @map("conteudo_secoes")
+  caminhoDocx      String?          @map("caminho_docx")
+  caminhoPdf       String?          @map("caminho_pdf")
+  criadoEm         DateTime         @default(now()) @map("criado_em")
+  atualizadoEm     DateTime         @updatedAt @map("atualizado_em")
+  concluidoEm      DateTime?        @map("concluido_em")
+  
+  usuarioId String  @map("usuario_id")
+  usuario   Usuario @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  projetoId String?  @map("projeto_id")
+  projeto   Projeto? @relation(fields: [projetoId], references: [id], onDelete: SetNull)
+  
+  versoes    VersaoDocumento[]
+  validacoes ValidacaoLegal[]
+  
+  @@index([usuarioId])
+  @@index([projetoId])
+  @@index([status])
+  @@map("documentos")
+}
+
+enum StatusDocumento {
+  RASCUNHO
+  EM_GERACAO
+  CONCLUIDO
+  ARQUIVADO
+}
+
+model VersaoDocumento {
+  id             String   @id @default(uuid())
+  numeroVersao   Int      @map("numero_versao")
+  conteudoSecoes Json     @map("conteudo_secoes")
+  alteracoes     String?
+  criadoEm       DateTime @default(now()) @map("criado_em")
+  
+  documentoId String    @map("documento_id")
+  documento   Documento @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  
+  @@unique([documentoId, numeroVersao])
+  @@index([documentoId])
+  @@map("versoes_documento")
+}
+
+model ValidacaoLegal {
+  id          String   @id @default(uuid())
+  secaoId     String   @map("secao_id")
+  regra       String
+  valido      Boolean
+  observacoes String?
+  criadoEm    DateTime @default(now()) @map("criado_em")
+  
+  documentoId String    @map("documento_id")
+  documento   Documento @relation(fields: [documentoId], references: [id], onDelete: Cascade)
+  
+  @@index([documentoId, secaoId])
+  @@index([documentoId, valido])
+  @@map("validacoes_legais")
+}
