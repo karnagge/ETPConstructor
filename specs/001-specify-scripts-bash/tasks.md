@@ -73,51 +73,51 @@
 
 #### Backend: AI Agents
 
-- [ ] T028 [P] [US1] Implement AgenteColetorConversacional in apps/backend/src/agentes/agente-coletor-conversacional.service.ts extending BaseAgente
-- [ ] T029 [P] [US1] Write system prompt for AgenteColetorConversacional with 11 field collection instructions
-- [ ] T030 [P] [US1] Implement response parsing logic with extrairJSON() method in AgenteColetorConversacional
-- [ ] T031 [P] [US1] Implement field validation logic for each of the 11 mandatory fields in AgenteColetorConversacional
+- [X] T028 [P] [US1] Implement AgenteColetorConversacional in apps/backend/src/agentes/agente-coletor-conversacional.service.ts extending BaseAgente
+- [X] T029 [P] [US1] Write system prompt for AgenteColetorConversacional with 11 field collection instructions
+- [X] T030 [P] [US1] Implement response parsing logic with extrairJSON() method in AgenteColetorConversacional
+- [X] T031 [P] [US1] Implement field validation logic for each of the 11 mandatory fields in AgenteColetorConversacional
 
 #### Backend: Chat Service & Gateway
 
-- [ ] T032 [US1] Create ChatGateway in apps/backend/src/chat/chat.gateway.ts with Socket.IO decorators
-- [ ] T033 [US1] Implement ChatService in apps/backend/src/chat/chat.service.ts for session state management with Redis
-- [ ] T034 [US1] Implement 'entrar_documento' WebSocket event handler in ChatGateway (joins room, loads session)
-- [ ] T035 [US1] Implement 'iniciar_coleta' WebSocket event handler in ChatGateway (starts conversation, sends welcome message)
-- [ ] T036 [US1] Implement 'enviar_mensagem' WebSocket event handler in ChatGateway (processes user message, updates dadosColetados)
-- [ ] T037 [US1] Implement progress calculation logic (camposColetados / 11 * 100) in ChatService
-- [ ] T038 [US1] Implement 'campo_coletado' event emission after successful field validation in ChatService
-- [ ] T039 [US1] Implement 'progresso_coleta' event emission with campos faltantes tracking in ChatService
+- [X] T032 [US1] Create ChatGateway in apps/backend/src/chat/chat.gateway.ts with Socket.IO decorators
+- [X] T033 [US1] Implement ChatService in apps/backend/src/chat/chat.service.ts for session state management with Redis
+- [X] T034 [US1] Implement 'entrar_documento' WebSocket event handler in ChatGateway (joins room, loads session)
+- [X] T035 [US1] Implement 'iniciar_coleta' WebSocket event handler in ChatGateway (starts conversation, sends welcome message)
+- [X] T036 [US1] Implement 'enviar_mensagem' WebSocket event handler in ChatGateway (processes user message, updates dadosColetados)
+- [X] T037 [US1] Implement progress calculation logic (camposColetados / 11 * 100) in ChatService
+- [X] T038 [US1] Implement 'campo_coletado' event emission after successful field validation in ChatService
+- [X] T039 [US1] Implement 'progresso_coleta' event emission with campos faltantes tracking in ChatService
 
 #### Backend: Documents API
 
-- [ ] T040 [P] [US1] Create DocumentosController in apps/backend/src/documentos/documentos.controller.ts with REST endpoints
-- [ ] T041 [P] [US1] Create DocumentosService in apps/backend/src/documentos/documentos.service.ts with business logic
-- [ ] T042 [P] [US1] Implement POST /api/documentos endpoint (create new ETP) in DocumentosController
-- [ ] T043 [P] [US1] Implement GET /api/documentos/:uuid endpoint (fetch single document) in DocumentosController
-- [ ] T044 [P] [US1] Implement GET /api/documentos endpoint with query filters (usuarioId, projetoId, status) in DocumentosController
-- [ ] T045 [P] [US1] Create Zod validation schemas for documento DTOs in apps/backend/src/documentos/dto/create-documento.dto.ts
-- [ ] T046 [P] [US1] Implement PATCH /api/documentos/:uuid endpoint (update dadosColetados) in DocumentosController
+- [X] T040 [P] [US1] Create DocumentosController in apps/backend/src/documentos/documentos.controller.ts with REST endpoints
+- [X] T041 [P] [US1] Create DocumentosService in apps/backend/src/documentos/documentos.service.ts with business logic
+- [X] T042 [P] [US1] Implement POST /api/documentos endpoint (create new ETP) in DocumentosController
+- [X] T043 [P] [US1] Implement GET /api/documentos/:uuid endpoint (fetch single document) in DocumentosController
+- [X] T044 [P] [US1] Implement GET /api/documentos endpoint with query filters (usuarioId, projetoId, status) in DocumentosController
+- [X] T045 [P] [US1] Create Zod validation schemas for documento DTOs in apps/backend/src/documentos/dto/create-documento.dto.ts
+- [X] T046 [P] [US1] Implement PATCH /api/documentos/:uuid endpoint (update dadosColetados) in DocumentosController
 
 #### Frontend: Chat Interface
 
-- [ ] T047 [P] [US1] Create ChatWindow component in apps/web/src/components/chat/ChatWindow.tsx with message list and input area
-- [ ] T048 [P] [US1] Create MessageList component in apps/web/src/components/chat/MessageList.tsx with auto-scroll
-- [ ] T049 [P] [US1] Create MessageBubble component in apps/web/src/components/chat/MessageBubble.tsx with user/assistant styling
-- [ ] T050 [P] [US1] Create InputArea component in apps/web/src/components/chat/InputArea.tsx with send button and shortcuts
-- [ ] T051 [P] [US1] Create ProgressBar component in apps/web/src/components/chat/ProgressBar.tsx showing collection progress (0-100%)
-- [ ] T052 [US1] Create chat Zustand store in apps/web/src/stores/chat.store.ts managing messages, progress, and session state
-- [ ] T053 [US1] Implement socket event listeners for 'mensagem_assistente', 'campo_coletado', 'progresso_coleta' in chat store
-- [ ] T054 [US1] Connect ChatWindow to socket service, emit 'enviar_mensagem' on user input
-- [ ] T055 [US1] Implement connection status indicator (connected/reconnecting/disconnected) in ChatWindow header
-- [ ] T056 [US1] Add "Confirmar Dados" button that appears when progress reaches 100% in ChatWindow
+- [X] T047 [P] [US1] Create ChatWindow component in apps/web/src/components/chat/ChatWindow.tsx with message list and input area
+- [X] T048 [P] [US1] Create MessageList component in apps/web/src/components/chat/MessageList.tsx with auto-scroll
+- [X] T049 [P] [US1] Create MessageBubble component in apps/web/src/components/chat/MessageBubble.tsx with user/assistant styling
+- [X] T050 [P] [US1] Create InputArea component in apps/web/src/components/chat/InputArea.tsx with send button and shortcuts
+- [X] T051 [P] [US1] Create ProgressBar component in apps/web/src/components/chat/ProgressBar.tsx showing collection progress (0-100%)
+- [X] T052 [US1] Create chat Zustand store in apps/web/src/stores/chat.store.ts managing messages, progress, and session state
+- [X] T053 [US1] Implement socket event listeners for 'mensagem_assistente', 'campo_coletado', 'progresso_coleta' in chat store
+- [X] T054 [US1] Connect ChatWindow to socket service, emit 'enviar_mensagem' on user input
+- [X] T055 [US1] Implement connection status indicator (connected/reconnecting/disconnected) in ChatWindow header
+- [X] T056 [US1] Add "Confirmar Dados" button that appears when progress reaches 100% in ChatWindow
 
 #### Frontend: Document Management
 
-- [ ] T057 [P] [US1] Create documents Zustand store in apps/web/src/stores/documents.store.ts managing documento list and active document
-- [ ] T058 [P] [US1] Implement fetchDocumentos(), createDocumento(), updateDocumento() actions in documents store using api.service
-- [ ] T059 [US1] Create Home page component in apps/web/src/pages/Home.tsx with chat interface for active document
-- [ ] T060 [US1] Implement "Novo ETP" button in Home page that creates document and starts collection
+- [X] T057 [P] [US1] Create documents Zustand store in apps/web/src/stores/documents.store.ts managing documento list and active document
+- [X] T058 [P] [US1] Implement fetchDocumentos(), createDocumento(), updateDocumento() actions in documents store using api.service
+- [X] T059 [US1] Create Home page component in apps/web/src/pages/Home.tsx with chat interface for active document
+- [X] T060 [US1] Implement "Novo ETP" button in Home page that creates document and starts collection
 
 **Checkpoint**: At this point, User Story 1 should be fully functional - users can create ETP and collect data via conversation
 
@@ -133,61 +133,61 @@
 
 #### Backend: Specialized AI Agents
 
-- [ ] T061 [P] [US2] Implement AgenteValidadorLegal in apps/backend/src/agentes/agente-validador-legal.service.ts extending BaseAgente
-- [ ] T062 [P] [US2] Implement AgenteEspecificacoesTecnicas in apps/backend/src/agentes/agente-especificacoes-tecnicas.service.ts extending BaseAgente
-- [ ] T063 [P] [US2] Implement AgenteEstimativaCustos in apps/backend/src/agentes/agente-estimativa-custos.service.ts extending BaseAgente
-- [ ] T064 [P] [US2] Implement AgenteGestaoContratual in apps/backend/src/agentes/agente-gestao-contratual.service.ts extending BaseAgente
-- [ ] T065 [P] [US2] Write specialized system prompts for each of the 4 agents with JSON output format instructions
+- [X] T061 [P] [US2] Implement AgenteValidadorLegal in apps/backend/src/agentes/agente-validador-legal.service.ts extending BaseAgente
+- [X] T062 [P] [US2] Implement AgenteEspecificacoesTecnicas in apps/backend/src/agentes/agente-especificacoes-tecnicas.service.ts extending BaseAgente
+- [X] T063 [P] [US2] Implement AgenteEstimativaCustos in apps/backend/src/agentes/agente-estimativa-custos.service.ts extending BaseAgente
+- [X] T064 [P] [US2] Implement AgenteGestaoContratual in apps/backend/src/agentes/agente-gestao-contratual.service.ts extending BaseAgente
+- [X] T065 [P] [US2] Write specialized system prompts for each of the 4 agents with JSON output format instructions
 
 #### Backend: Multi-Agent Orchestration
 
-- [ ] T066 [US2] Create OrquestradorMultiAgenteService in apps/backend/src/agentes/orquestrador-multi-agente.service.ts
-- [ ] T067 [US2] Implement gerarSecoes() method with Promise.allSettled for parallel agent execution (Especificacoes, Custos, Gestao)
-- [ ] T068 [US2] Implement graceful error handling for individual agent failures in OrquestradorMultiAgenteService
-- [ ] T069 [US2] Implement progress emission at each phase (10%, 30%, 60%, 80%, 90%, 100%) via ChatGateway
-- [ ] T070 [US2] Implement 'secao_gerada' event emission for each completed section
+- [X] T066 [US2] Create OrquestradorMultiAgenteService in apps/backend/src/agentes/orquestrador-multi-agente.service.ts
+- [X] T067 [US2] Implement gerarSecoes() method with Promise.allSettled for parallel agent execution (Especificacoes, Custos, Gestao)
+- [X] T068 [US2] Implement graceful error handling for individual agent failures in OrquestradorMultiAgenteService
+- [X] T069 [US2] Implement progress emission at each phase (10%, 30%, 60%, 80%, 90%, 100%) via ChatGateway
+- [X] T070 [US2] Implement 'secao_gerada' event emission for each completed section
 
 #### Backend: Legal Validation
 
-- [ ] T071 [P] [US2] Create ValidacaoLegalService in apps/backend/src/validacao/validacao-legal.service.ts
-- [ ] T072 [P] [US2] Define legal validation rules in apps/backend/src/validacao/regras-legais.config.ts (15+ rules as pure functions)
-- [ ] T073 [US2] Implement validarDados() method executing all rules and persisting ValidacaoLegal entries
-- [ ] T074 [US2] Implement calculateCompliance() method computing percentual de conformidade
-- [ ] T075 [US2] Implement critical error detection blocking generation if erros críticos exist
-- [ ] T076 [US2] Implement 'validacao_completa' event emission with resumo (percentual, alertas, erros) in ChatGateway
+- [X] T071 [P] [US2] Create ValidacaoLegalService in apps/backend/src/validacao/validacao-legal.service.ts
+- [X] T072 [P] [US2] Define legal validation rules in apps/backend/src/validacao/regras-legais.config.ts (15+ rules as pure functions)
+- [X] T073 [US2] Implement validarDados() method executing all rules and persisting ValidacaoLegal entries
+- [X] T074 [US2] Implement calculateCompliance() method computing percentual de conformidade
+- [X] T075 [US2] Implement critical error detection blocking generation if erros críticos exist
+- [X] T076 [US2] Implement 'validacao_completa' event emission with resumo (percentual, alertas, erros) in ChatGateway
 
 #### Backend: Document Generation
 
-- [ ] T077 [P] [US2] Create GeracaoService in apps/backend/src/geracao/geracao.service.ts coordinating full generation flow
-- [ ] T078 [P] [US2] Create DocxBuilderService in apps/backend/src/geracao/docx-builder.service.ts using docx library
-- [ ] T079 [US2] Implement gerarDocumento() method assembling 9 sections with proper Word formatting (headers, margins, numbering)
-- [ ] T080 [US2] Implement criarSecao1() through criarSecao9() methods in DocxBuilderService for each ETP section
+- [X] T077 [P] [US2] Create GeracaoService in apps/backend/src/geracao/geracao.service.ts coordinating full generation flow
+- [X] T078 [P] [US2] Create DocxBuilderService in apps/backend/src/geracao/docx-builder.service.ts using docx library
+- [X] T079 [US2] Implement gerarDocumento() method assembling 9 sections with proper Word formatting (headers, margins, numbering)
+- [X] T080 [US2] Implement criarSecao1() through criarSecao9() methods in DocxBuilderService for each ETP section
 - [ ] T081 [US2] Implement DOCX to PDF conversion (optional, or serve only DOCX for MVP)
-- [ ] T082 [US2] Implement file persistence to apps/backend/uploads/documents/ directory with UUID-based naming
-- [ ] T083 [US2] Update Documento entity with caminhoDocx, caminhoPdf, concluidoEm after successful generation
+- [X] T082 [US2] Implement file persistence to apps/backend/uploads/documents/ directory with UUID-based naming
+- [X] T083 [US2] Update Documento entity with caminhoDocx, caminhoPdf, concluidoEm after successful generation
 
 #### Backend: Generation API & WebSocket
 
-- [ ] T084 [US2] Implement POST /api/documentos/:uuid/gerar endpoint in DocumentosController
-- [ ] T085 [US2] Validate pre-requisites (11 campos coletados, sem erros críticos) before starting generation
-- [ ] T086 [US2] Update documento status to EM_GERACAO in database before calling OrquestradorMultiAgenteService
-- [ ] T087 [US2] Implement 'gerar_documento' WebSocket event handler in ChatGateway calling GeracaoService
-- [ ] T088 [US2] Implement 'geracao_iniciada' event emission after validation passes
-- [ ] T089 [US2] Implement 'geracao_completa' event emission with file paths and tempo de geração
-- [ ] T090 [US2] Implement GET /api/documentos/:uuid/download/docx endpoint for file download with proper Content-Disposition headers
+- [X] T084 [US2] Implement POST /api/documentos/:uuid/gerar endpoint in DocumentosController
+- [X] T085 [US2] Validate pre-requisites (11 campos coletados, sem erros críticos) before starting generation
+- [X] T086 [US2] Update documento status to EM_GERACAO in database before calling OrquestradorMultiAgenteService
+- [X] T087 [US2] Implement 'gerar_documento' WebSocket event handler in ChatGateway calling GeracaoService
+- [X] T088 [US2] Implement 'geracao_iniciada' event emission after validation passes
+- [X] T089 [US2] Implement 'geracao_completa' event emission with file paths and tempo de geração
+- [X] T090 [US2] Implement GET /api/documentos/:uuid/download/docx endpoint for file download with proper Content-Disposition headers
 - [ ] T091 [P] [US2] Implement GET /api/documentos/:uuid/download/pdf endpoint (if PDF conversion implemented)
 
 #### Frontend: Generation UI
 
-- [ ] T092 [P] [US2] Create GenerationProgress component in apps/web/src/components/generation/ProgressBar.tsx with 5-phase visualization
-- [ ] T093 [P] [US2] Create PhaseIndicator component in apps/web/src/components/generation/PhaseIndicator.tsx showing current phase name
-- [ ] T094 [P] [US2] Create SectionChecklist component in apps/web/src/components/generation/SectionChecklist.tsx marking completed sections (9 items)
-- [ ] T095 [US2] Implement socket event listeners for 'geracao_iniciada', 'progresso_geracao', 'secao_gerada', 'geracao_completa' in documents store
-- [ ] T096 [US2] Create GenerationModal component in apps/web/src/components/generation/GenerationModal.tsx showing real-time progress
-- [ ] T097 [US2] Implement "Gerar ETP" button click handler emitting 'gerar_documento' socket event
-- [ ] T098 [US2] Show GenerationModal automatically when generation starts (on 'geracao_iniciada' event)
-- [ ] T099 [US2] Display download buttons (DOCX, PDF) after 'geracao_completa' event with proper file download links
-- [ ] T100 [US2] Handle generation errors gracefully showing error message and allowing retry
+- [X] T092 [P] [US2] Create GenerationProgress component in apps/web/src/components/generation/ProgressBar.tsx with 5-phase visualization
+- [X] T093 [P] [US2] Create PhaseIndicator component in apps/web/src/components/generation/PhaseIndicator.tsx showing current phase name
+- [X] T094 [P] [US2] Create SectionChecklist component in apps/web/src/components/generation/SectionChecklist.tsx marking completed sections (9 items)
+- [X] T095 [US2] Implement socket event listeners for 'geracao_iniciada', 'progresso_geracao', 'secao_gerada', 'geracao_completa' in documents store
+- [X] T096 [US2] Create GenerationModal component in apps/web/src/components/generation/GenerationModal.tsx showing real-time progress
+- [X] T097 [US2] Implement "Gerar ETP" button click handler emitting 'gerar_documento' socket event
+- [X] T098 [US2] Show GenerationModal automatically when generation starts (on 'geracao_iniciada' event)
+- [X] T099 [US2] Display download buttons (DOCX, PDF) after 'geracao_completa' event with proper file download links
+- [X] T100 [US2] Handle generation errors gracefully showing error message and allowing retry
 
 **Checkpoint**: At this point, User Story 2 is complete - documents can be generated with full multi-agent orchestration
 

@@ -1,10 +1,13 @@
+import Anthropic from '@anthropic-ai/sdk';
+
 /**
  * BaseAgente - Abstract base class for all AI agents
- * Wraps Claude Agent SDK with common functionality
+ * Wraps Anthropic Claude SDK with common functionality
  */
 export abstract class BaseAgente {
   protected model = 'claude-sonnet-4-20250514';
   protected apiKey: string;
+  protected anthropic: Anthropic;
 
   constructor() {
     this.apiKey = process.env.ANTHROPIC_API_KEY || '';
@@ -13,6 +16,10 @@ export abstract class BaseAgente {
         'ANTHROPIC_API_KEY environment variable is required for AI agents',
       );
     }
+    
+    this.anthropic = new Anthropic({
+      apiKey: this.apiKey,
+    });
   }
 
   /**
@@ -40,18 +47,37 @@ export abstract class BaseAgente {
   /**
    * Execute agent with given message and context
    * @param mensagem - User message or prompt
-   * @param contexto - Additional context data
+   * @param contexto - Additional context data (unused in base implementation, available for subclasses)
    * @returns Agent response content
    */
-  protected async executar(mensagem: string, contexto?: any): Promise<string> {
-    // TODO: Implement Claude Agent SDK integration
-    // For now, return placeholder
-    console.log(`[${this.nome}] Executing with message:`, mensagem);
-    console.log(`[${this.nome}] Context:`, contexto);
+  protected async executar(mensagem: string, _contexto?: any): Promise<string> {
+    console.log(`[${this.nome}] Executing with message:`, mensagem.substring(0, 100) + '...');
     
-    throw new Error(
-      'Claude Agent SDK integration not yet implemented. This will be completed in Phase 3.',
-    );
+    try {
+      const response = await this.anthropic.messages.create({
+        model: this.model,
+        max_tokens: 4096,
+        system: this.systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: mensagem,
+          },
+        ],
+        temperature: 0.7,
+      });
+
+      // Extract text content from response
+      const content = response.content[0];
+      if (content.type === 'text') {
+        return content.text;
+      }
+
+      throw new Error(`Unexpected response type: ${content.type}`);
+    } catch (error) {
+      console.error(`[${this.nome}] Execution error:`, error);
+      throw error;
+    }
   }
 
   /**

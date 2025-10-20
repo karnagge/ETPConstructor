@@ -12,6 +12,8 @@ import { Injectable } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AgenteColetorConversacionalService } from '../agentes/agente-coletor-conversacional.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { GeracaoService } from '../geracao/geracao.service';
+import { ValidacaoLegalService } from '../validacao/validacao-legal.service';
 
 /**
  * ChatGateway
@@ -33,6 +35,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private readonly chatService: ChatService,
     private readonly agenteColetorService: AgenteColetorConversacionalService,
     private readonly prisma: PrismaService,
+    private readonly geracaoService: GeracaoService,
+    private readonly validacaoLegal: ValidacaoLegalService,
   ) {}
 
   handleConnection(client: Socket) {
@@ -205,5 +209,168 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       console.error('[ChatGateway] Error in enviar_mensagem:', error);
       client.emit('erro', { message: 'Erro ao processar mensagem' });
     }
+  }
+
+  /**
+   * T087: gerar_documento - Start document generation with multi-agent orchestration
+   */
+  @SubscribeMessage('gerar_documento')
+  async handleGerarDocumento(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { documentoId: string },
+  ) {
+    try {
+      const { documentoId } = data;
+      const roomName = `doc-${documentoId}`;
+
+      console.log(`[ChatGateway] Starting generation for documento ${documentoId}`);
+
+      // Load document
+      const documento = await this.prisma.documento.findUnique({
+        where: { uuid: documentoId },
+      });
+
+      if (!documento) {
+        client.emit('erro', { message: 'Documento não encontrado' });
+        return;
+      }
+
+      // T085: Validate prerequisites
+      const isCompleto = this.chatService.isColetaCompleta(
+        documento.dadosColetados,
+      );
+
+      if (!isCompleto) {
+        client.emit('erro', {
+          message: 'Coleta incompleta. Complete todos os campos antes de gerar.',
+        });
+        return;
+      }
+
+      // Check critical legal errors
+      const hasCriticalErrors = await this.validacaoLegal.hasCriticalErrors(
+        documento.id,
+      );
+
+      if (hasCriticalErrors) {
+        client.emit('erro', {
+          message:
+            'Documento possui erros críticos de validação. Corrija-os antes de gerar.',
+        });
+        return;
+      }
+
+      // T088: Emit geracao_iniciada
+      this.server.to(roomName).emit('geracao_iniciada', {
+        documentoId,
+        timestamp: new Date().toISOString(),
+      });
+
+      // Generate document with progress callbacks
+      const resultado = await this.geracaoService.gerarDocumento(
+        documento.id,
+        (phase: string, percentage: number) => {
+          // T069: Emit progresso_geracao
+          this.server.to(roomName).emit('progresso_geracao', {
+            fase: phase,
+            percentual: percentage,
+            timestamp: new Date().toISOString(),
+          });
+
+          // T070: Emit secao_gerada when section completes
+          if (percentage === 30 || percentage === 60 || percentage === 80) {
+            const secaoId = this.getSecaoIdForPercentage(percentage);
+            this.server.to(roomName).emit('secao_gerada', {
+              secaoId,
+              timestamp: new Date().toISOString(),
+            });
+          }
+        },
+      );
+
+      // T089: Emit geracao_completa
+      this.server.to(roomName).emit('geracao_completa', {
+        documentoId,
+        caminhoDocx: resultado.caminhoDocx,
+        tempoGeracao: resultado.tempoGeracao,
+        secoesGeradas: resultado.secoesGeradas,
+        erros: resultado.erros,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log(
+        `[ChatGateway] Generation complete for documento ${documentoId} in ${resultado.tempoGeracao}s`,
+      );
+    } catch (error) {
+      console.error('[ChatGateway] Error in gerar_documento:', error);
+      
+      const roomName = `doc-${data.documentoId}`;
+      this.server.to(roomName).emit('geracao_erro', {
+        message: error instanceof Error ? error.message : 'Erro ao gerar documento',
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }
+
+  /**
+   * T076: validacao_completa - Perform legal validation and emit results
+   */
+  @SubscribeMessage('validar_documento')
+  async handleValidarDocumento(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { documentoId: string },
+  ) {
+    try {
+      const { documentoId } = data;
+      const roomName = `doc-${documentoId}`;
+
+      console.log(`[ChatGateway] Validating documento ${documentoId}`);
+
+      // Load document
+      const documento = await this.prisma.documento.findUnique({
+        where: { uuid: documentoId },
+      });
+
+      if (!documento) {
+        client.emit('erro', { message: 'Documento não encontrado' });
+        return;
+      }
+
+      // Execute validation
+      const resultado = await this.validacaoLegal.validarDados(
+        documento.id,
+        documento.dadosColetados,
+      );
+
+      // Emit validation complete event
+      this.server.to(roomName).emit('validacao_completa', {
+        percentual_conformidade: resultado.percentual_conformidade,
+        total_regras: resultado.total_regras,
+        regras_validas: resultado.regras_validas,
+        erros_criticos: resultado.erros_criticos,
+        alertas: resultado.alertas,
+        bloqueio_geracao: resultado.bloqueio_geracao,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log(
+        `[ChatGateway] Validation complete for documento ${documentoId}: ${resultado.percentual_conformidade}%`,
+      );
+    } catch (error) {
+      console.error('[ChatGateway] Error in validar_documento:', error);
+      client.emit('erro', { message: 'Erro ao validar documento' });
+    }
+  }
+
+  /**
+   * Helper to map percentage to section ID
+   */
+  private getSecaoIdForPercentage(percentage: number): string {
+    const mapping: { [key: number]: string } = {
+      30: '1_definicao_objeto',
+      60: '3_especificacoes',
+      80: '5_gestao_fiscalizacao',
+    };
+    return mapping[percentage] || 'unknown';
   }
 }

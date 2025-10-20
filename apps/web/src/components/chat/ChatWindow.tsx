@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import { MessageList } from './MessageList';
 import { InputArea } from './InputArea';
 import { ProgressBar } from './ProgressBar';
+import { GenerationModal } from '../generation/GenerationModal';
 import { socketService } from '../../services/socket.service';
+import { useDocumentsStore } from '../../stores/documents.store';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -26,6 +28,18 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
   const [camposFaltantes, setCamposFaltantes] = useState<string[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // T097, T098: Generation modal state
+  const [showGenerationModal, setShowGenerationModal] = useState(false);
+  
+  // T095: Connect to documents store for generation events
+  const {
+    onGenerationStarted,
+    onGenerationProgress,
+    onSectionGenerated,
+    onGenerationComplete,
+    onGenerationError,
+  } = useDocumentsStore();
 
   useEffect(() => {
     // Connect to WebSocket
@@ -95,6 +109,34 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       alert(`Erro: ${data.message}`);
     });
 
+    // T095: Listen for generation events
+    socketService.on('geracao_iniciada', (data: any) => {
+      console.log('[ChatWindow] Generation started:', data);
+      onGenerationStarted(data);
+      // T098: Show modal when generation starts
+      setShowGenerationModal(true);
+    });
+
+    socketService.on('progresso_geracao', (data: any) => {
+      console.log('[ChatWindow] Generation progress:', data);
+      onGenerationProgress(data);
+    });
+
+    socketService.on('secao_gerada', (data: any) => {
+      console.log('[ChatWindow] Section generated:', data);
+      onSectionGenerated(data);
+    });
+
+    socketService.on('geracao_completa', (data: any) => {
+      console.log('[ChatWindow] Generation complete:', data);
+      onGenerationComplete(data);
+    });
+
+    socketService.on('erro_geracao', (data: any) => {
+      console.error('[ChatWindow] Generation error:', data);
+      onGenerationError(data);
+    });
+
     return () => {
       // Cleanup listeners
       socketService.off('connect');
@@ -104,8 +146,14 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       socketService.off('campo_coletado');
       socketService.off('progresso_coleta');
       socketService.off('erro');
+      // Cleanup generation listeners
+      socketService.off('geracao_iniciada');
+      socketService.off('progresso_geracao');
+      socketService.off('secao_gerada');
+      socketService.off('geracao_completa');
+      socketService.off('erro_geracao');
     };
-  }, [documentoId, onColetaCompleta]);
+  }, [documentoId, onColetaCompleta, onGenerationStarted, onGenerationProgress, onSectionGenerated, onGenerationComplete, onGenerationError]);
 
   // T054: Handle send message
   const handleSendMessage = (content: string) => {
@@ -141,6 +189,23 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
     socketService.emit('iniciar_coleta', { documentoId });
   };
 
+  // T097: Handle "Gerar ETP" button click
+  const handleGerarETP = () => {
+    if (!isConnected) {
+      alert('Não conectado ao servidor. Tentando reconectar...');
+      socketService.connect();
+      return;
+    }
+
+    if (progress < 100) {
+      alert('Coleta de dados ainda não está completa. Por favor, complete todos os campos obrigatórios.');
+      return;
+    }
+
+    // Emit gerar_documento event
+    socketService.emit('gerar_documento', { documentoId });
+  };
+
   return (
     <div className="flex flex-col h-full bg-neutral-50">
       {/* T055: Connection status indicator */}
@@ -172,14 +237,14 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       {/* Messages */}
       <MessageList messages={messages} />
 
-      {/* T056: Confirmar Dados button (appears at 100%) */}
+      {/* T056, T097: Confirmar Dados button (appears at 100%) */}
       {progress === 100 && (
         <div className="px-4 py-2 bg-green-50 border-t border-green-200">
           <button
-            onClick={() => alert('Dados confirmados! Pronto para gerar ETP.')}
+            onClick={handleGerarETP}
             className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium transition-colors"
           >
-            ✓ Confirmar Dados e Continuar
+            ✓ Gerar ETP
           </button>
         </div>
       )}
@@ -202,6 +267,13 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
           </button>
         </div>
       )}
+
+      {/* T096, T098, T099, T100: Generation Modal */}
+      <GenerationModal
+        isOpen={showGenerationModal}
+        onClose={() => setShowGenerationModal(false)}
+        documentoUuid={documentoId}
+      />
     </div>
   );
 }

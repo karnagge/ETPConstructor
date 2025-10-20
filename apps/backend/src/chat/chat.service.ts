@@ -121,6 +121,14 @@ export class ChatService {
   }
 
   /**
+   * Check if data collection is complete (all mandatory fields filled)
+   */
+  isColetaCompleta(dadosColetados: any): boolean {
+    const camposFaltantes = this.getCamposFaltantes(dadosColetados);
+    return camposFaltantes.length === 0;
+  }
+
+  /**
    * Clear session (logout or document closed)
    */
   async limparSessao(documentoId: string): Promise<void> {

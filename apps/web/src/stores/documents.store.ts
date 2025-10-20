@@ -27,11 +27,30 @@ interface Documento {
   };
 }
 
+interface Section {
+  id: string;
+  title: string;
+  status: 'pending' | 'generating' | 'completed' | 'error';
+}
+
+interface GenerationState {
+  isGenerating: boolean;
+  progress: number;
+  currentPhase: string;
+  sections: Section[];
+  error: string | null;
+  startedAt?: Date;
+  completedAt?: Date;
+}
+
 interface DocumentsState {
   documentos: Documento[];
   activeDocumento: Documento | null;
   isLoading: boolean;
   error: string | null;
+
+  // T095: Generation state
+  generation: GenerationState;
 
   // Actions
   fetchDocumentos: (filters?: {
@@ -52,6 +71,18 @@ interface DocumentsState {
   ) => Promise<void>;
   setActiveDocumento: (documento: Documento | null) => void;
   clearError: () => void;
+
+  // T095: Generation actions (socket event handlers)
+  onGenerationStarted: (data: { documentoId: string }) => void;
+  onGenerationProgress: (data: { percent: number; phase: string }) => void;
+  onSectionGenerated: (data: { secaoId: string; conteudo: any }) => void;
+  onGenerationComplete: (data: {
+    documentoId: string;
+    caminhoDocx: string;
+    tempoGeracao: number;
+  }) => void;
+  onGenerationError: (data: { error: string }) => void;
+  resetGeneration: () => void;
 }
 
 /**
@@ -63,6 +94,25 @@ export const useDocumentsStore = create<DocumentsState>((set) => ({
   activeDocumento: null,
   isLoading: false,
   error: null,
+
+  // T095: Initial generation state
+  generation: {
+    isGenerating: false,
+    progress: 0,
+    currentPhase: '',
+    sections: [
+      { id: '1_definicao_objeto', title: '1. Definição do Objeto', status: 'pending' },
+      { id: '2_justificativa', title: '2. Justificativa', status: 'pending' },
+      { id: '3_especificacoes', title: '3. Especificações Técnicas', status: 'pending' },
+      { id: '4_estimativa_custos', title: '4. Estimativa de Custos', status: 'pending' },
+      { id: '5_gestao_fiscalizacao', title: '5. Gestão e Fiscalização', status: 'pending' },
+      { id: '6_obrigacoes_contratante', title: '6. Obrigações do Contratante', status: 'pending' },
+      { id: '7_obrigacoes_contratada', title: '7. Obrigações da Contratada', status: 'pending' },
+      { id: '8_criterios_aceitacao', title: '8. Critérios de Aceitação', status: 'pending' },
+      { id: '9_sancoes', title: '9. Sanções', status: 'pending' },
+    ],
+    error: null,
+  },
 
   /**
    * T058: Fetch all documentos with filters
@@ -170,5 +220,120 @@ export const useDocumentsStore = create<DocumentsState>((set) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  /**
+   * T095: Socket event handler - generation started
+   */
+  onGenerationStarted: (data) => {
+    set((state) => ({
+      generation: {
+        ...state.generation,
+        isGenerating: true,
+        progress: 0,
+        currentPhase: 'Iniciando',
+        error: null,
+        startedAt: new Date(),
+        completedAt: undefined,
+        sections: state.generation.sections.map((s) => ({
+          ...s,
+          status: 'pending',
+        })),
+      },
+      // Update documento status
+      activeDocumento: state.activeDocumento
+        ? { ...state.activeDocumento, status: 'EM_GERACAO' }
+        : state.activeDocumento,
+    }));
+  },
+
+  /**
+   * T095: Socket event handler - progress update
+   */
+  onGenerationProgress: (data) => {
+    set((state) => ({
+      generation: {
+        ...state.generation,
+        progress: data.percent,
+        currentPhase: data.phase,
+      },
+    }));
+  },
+
+  /**
+   * T095: Socket event handler - section generated
+   */
+  onSectionGenerated: (data) => {
+    set((state) => ({
+      generation: {
+        ...state.generation,
+        sections: state.generation.sections.map((s) =>
+          s.id === data.secaoId
+            ? { ...s, status: 'completed' as const }
+            : s
+        ),
+      },
+    }));
+  },
+
+  /**
+   * T095: Socket event handler - generation complete
+   */
+  onGenerationComplete: (data) => {
+    set((state) => ({
+      generation: {
+        ...state.generation,
+        isGenerating: false,
+        progress: 100,
+        currentPhase: 'Concluído',
+        completedAt: new Date(),
+        sections: state.generation.sections.map((s) => ({
+          ...s,
+          status: 'completed',
+        })),
+      },
+      // Update documento with file paths
+      activeDocumento: state.activeDocumento
+        ? {
+            ...state.activeDocumento,
+            status: 'CONCLUIDO',
+            caminhoDocx: data.caminhoDocx,
+            concluidoEm: new Date().toISOString(),
+          }
+        : state.activeDocumento,
+    }));
+  },
+
+  /**
+   * T095: Socket event handler - generation error
+   */
+  onGenerationError: (data) => {
+    set((state) => ({
+      generation: {
+        ...state.generation,
+        isGenerating: false,
+        error: data.error,
+      },
+    }));
+  },
+
+  /**
+   * T095: Reset generation state
+   */
+  resetGeneration: () => {
+    set((state) => ({
+      generation: {
+        isGenerating: false,
+        progress: 0,
+        currentPhase: '',
+        sections: state.generation.sections.map((s) => ({
+          ...s,
+          status: 'pending',
+        })),
+        error: null,
+        startedAt: undefined,
+        completedAt: undefined,
+      },
+    }));
   },
 }));
