@@ -12,8 +12,10 @@ import { AgenteEspecificacoesTecnicasService } from '../agentes/agente-especific
 import { AgenteEstimativaCustosService } from '../agentes/agente-estimativa-custos.service';
 import { AgenteGestaoContratualService } from '../agentes/agente-gestao-contratual.service';
 import { ValidacaoLegalService } from '../validacao/validacao-legal.service';
+import { ToolsModule } from '../tools/tools.module';
 
 @Module({
+  imports: [ToolsModule],
   providers: [
     ChatGateway,
     ChatService,
