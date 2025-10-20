@@ -8,6 +8,10 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // T189: Connection pooling configuration
+  // In production, use a connection pooler like PgBouncer
+  // Example DATABASE_URL with pooling params:
+  // postgresql://user:pass@host:5432/db?schema=public&connection_limit=10&pool_timeout=20
 }
 
 // ==================== MODELS ====================

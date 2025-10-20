@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { ProjetosService } from './projetos.service';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { UuidValidationPipe } from '../common/pipes/uuid-validation.pipe';
 import {
   createProjetoSchema,
   updateProjetoSchema,
@@ -48,7 +49,7 @@ export class ProjetosController {
    * Get a single project with its documents
    */
   @Get(':uuid')
-  async findOne(@Param('uuid') uuid: string) {
+  async findOne(@Param('uuid', UuidValidationPipe) uuid: string) {
     return this.projetosService.findOne(uuid);
   }
 
@@ -59,7 +60,7 @@ export class ProjetosController {
   @Patch(':uuid')
   @UsePipes(new ZodValidationPipe(updateProjetoSchema))
   async update(
-    @Param('uuid') uuid: string,
+    @Param('uuid', UuidValidationPipe) uuid: string,
     @Body() updateProjetoDto: UpdateProjetoDto,
   ) {
     return this.projetosService.update(uuid, updateProjetoDto);
@@ -71,7 +72,7 @@ export class ProjetosController {
    */
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('uuid') uuid: string) {
+  async remove(@Param('uuid', UuidValidationPipe) uuid: string) {
     await this.projetosService.remove(uuid);
   }
 }

@@ -23,6 +23,7 @@ import {
   UpdateDocumentoDto,
 } from './dto/create-documento.dto';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
+import { UuidValidationPipe } from '../common/pipes/uuid-validation.pipe';
 import { GeracaoService } from '../geracao/geracao.service';
 
 /**
@@ -65,7 +66,7 @@ export class DocumentosController {
    * T043: GET /api/documentos/:uuid - Get single documento
    */
   @Get(':uuid')
-  async findOne(@Param('uuid') uuid: string) {
+  async findOne(@Param('uuid', UuidValidationPipe) uuid: string) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {
@@ -80,7 +81,10 @@ export class DocumentosController {
    */
   @Patch(':uuid')
   @UsePipes(new ZodValidationPipe(UpdateDocumentoSchema))
-  async update(@Param('uuid') uuid: string, @Body() dto: UpdateDocumentoDto) {
+  async update(
+    @Param('uuid', UuidValidationPipe) uuid: string,
+    @Body() dto: UpdateDocumentoDto,
+  ) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {
@@ -95,7 +99,7 @@ export class DocumentosController {
    */
   @Delete(':uuid')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('uuid') uuid: string) {
+  async delete(@Param('uuid', UuidValidationPipe) uuid: string) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {
@@ -109,7 +113,7 @@ export class DocumentosController {
    * GET /api/documentos/:uuid/progresso - Get collection progress
    */
   @Get(':uuid/progresso')
-  async getProgresso(@Param('uuid') uuid: string) {
+  async getProgresso(@Param('uuid', UuidValidationPipe) uuid: string) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {
@@ -157,7 +161,7 @@ export class DocumentosController {
    * T084: POST /api/documentos/:uuid/gerar - Generate ETP document
    */
   @Post(':uuid/gerar')
-  async gerar(@Param('uuid') uuid: string) {
+  async gerar(@Param('uuid', UuidValidationPipe) uuid: string) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {
@@ -193,7 +197,7 @@ export class DocumentosController {
    * T090: GET /api/documentos/:uuid/download/docx - Download DOCX file
    */
   @Get(':uuid/download/docx')
-  async downloadDocx(@Param('uuid') uuid: string, @Res() res: Response) {
+  async downloadDocx(@Param('uuid', UuidValidationPipe) uuid: string, @Res() res: Response) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {
@@ -222,7 +226,7 @@ export class DocumentosController {
    * T091: GET /api/documentos/:uuid/download/pdf - Download PDF file (optional)
    */
   @Get(':uuid/download/pdf')
-  async downloadPdf(@Param('uuid') uuid: string, @Res() res: Response) {
+  async downloadPdf(@Param('uuid', UuidValidationPipe) uuid: string, @Res() res: Response) {
     const documento = await this.documentosService.findByUuid(uuid);
 
     if (!documento) {

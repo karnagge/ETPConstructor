@@ -8,12 +8,16 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AgenteColetorConversacionalService } from '../agentes/agente-coletor-conversacional.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeracaoService } from '../geracao/geracao.service';
 import { ValidacaoLegalService } from '../validacao/validacao-legal.service';
+import {
+  sanitizePromptInput,
+  isInputSafe,
+} from '../common/utils/input-sanitizer';
 
 /**
  * ChatGateway
@@ -141,8 +145,27 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       const { documentoId, mensagem } = data;
       const roomName = `doc-${documentoId}`;
 
-      // Save user message to session
-      await this.chatService.adicionarMensagem(documentoId, 'user', mensagem);
+      // T186: Validate and sanitize user input to prevent prompt injection
+      if (!isInputSafe(mensagem)) {
+        client.emit('erro', {
+          message: 'Entrada contém caracteres não permitidos',
+        });
+        return;
+      }
+
+      const mensagemSanitizada = sanitizePromptInput(mensagem);
+
+      if (!mensagemSanitizada || mensagemSanitizada.length === 0) {
+        client.emit('erro', { message: 'Mensagem vazia após sanitização' });
+        return;
+      }
+
+      // Save user message to session (original for display, sanitized for processing)
+      await this.chatService.adicionarMensagem(
+        documentoId,
+        'user',
+        mensagemSanitizada,
+      );
 
       // Load current document data
       const documento = await this.prisma.documento.findUnique({
@@ -154,9 +177,9 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
-      // Process message with agent
+      // Process message with agent (using sanitized input)
       const resposta = await this.agenteColetorService.processarMensagem(
-        mensagem,
+        mensagemSanitizada,
         documento.dadosColetados,
       );
 

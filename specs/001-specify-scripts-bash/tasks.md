@@ -326,26 +326,26 @@
 
 **Purpose**: Improvements that affect multiple user stories and production readiness
 
-- [ ] T170 [P] Create comprehensive README.md in repository root with project overview, setup instructions, and architecture diagram
-- [ ] T171 [P] Update quickstart.md with any changes discovered during implementation (if paths or commands changed)
+- [X] T170 [P] Create comprehensive README.md in repository root with project overview, setup instructions, and architecture diagram
+- [X] T171 [P] Update quickstart.md with any changes discovered during implementation (if paths or commands changed)
 - [ ] T172 [P] Add JSDoc comments to all public methods in backend services for API documentation
 - [ ] T173 [P] Add PropTypes or TypeScript prop interfaces documentation to all React components
-- [ ] T174 [P] Implement proper error logging with Winston or Pino in backend services
-- [ ] T175 [P] Add request logging middleware in NestJS main.ts logging all HTTP requests
+- [X] T174 [P] Implement proper error logging with Winston or Pino in backend services
+- [X] T175 [P] Add request logging middleware in NestJS main.ts logging all HTTP requests
 - [ ] T176 [P] Implement rate limiting for REST endpoints (100 req/min per IP) using @nestjs/throttler
 - [ ] T177 Code cleanup: Remove console.log statements, unused imports, and commented code across all files
-- [ ] T178 Refactor: Extract magic numbers to constants (e.g., 11 MANDATORY_FIELDS_COUNT, 2000 DEBOUNCE_MS)
+- [X] T178 Refactor: Extract magic numbers to constants (e.g., 11 MANDATORY_FIELDS_COUNT, 2000 DEBOUNCE_MS)
 - [ ] T179 Refactor: Extract long methods (>50 lines) into smaller focused functions
 - [ ] T180 [P] Add loading skeletons for slow-loading components (ProjectTree, DocumentList) using shadcn Skeleton
 - [ ] T181 [P] Implement optimistic UI updates for create/update operations (show change immediately, rollback on error)
 - [ ] T182 [P] Add empty states for ProjectTree (no projects), DocumentList (no documents) with helpful CTAs
 - [ ] T183 [P] Improve error messages to be user-friendly (translate technical errors to plain Portuguese)
 - [ ] T184 [P] Add keyboard shortcuts for common actions (Ctrl+Enter send message, Ctrl+S force save, etc.)
-- [ ] T185 Security: Validate all UUIDs in API endpoints to prevent injection attacks
-- [ ] T186 Security: Sanitize all user input before passing to AI agents (prevent prompt injection)
-- [ ] T187 Security: Implement CSRF protection for state-changing endpoints
-- [ ] T188 [P] Performance: Add database indexes verification (ensure all 9 indexes from data-model.md exist)
-- [ ] T189 [P] Performance: Implement connection pooling for Prisma Client (configure in schema.prisma)
+- [X] T185 Security: Validate all UUIDs in API endpoints to prevent injection attacks
+- [X] T186 Security: Sanitize all user input before passing to AI agents (prevent prompt injection)
+- [X] T187 Security: Implement CSRF protection for state-changing endpoints
+- [X] T188 [P] Performance: Add database indexes verification (ensure all 9 indexes from data-model.md exist)
+- [X] T189 [P] Performance: Implement connection pooling for Prisma Client (configure in schema.prisma)
 - [ ] T190 [P] Performance: Add Redis caching for frequently accessed projetos and documentos lists (5 min TTL)
 - [ ] T191 Performance: Profile and optimize slowest API endpoints using NestJS interceptors
 - [ ] T192 [P] Accessibility: Add ARIA labels to all interactive elements (buttons, inputs, modals)
