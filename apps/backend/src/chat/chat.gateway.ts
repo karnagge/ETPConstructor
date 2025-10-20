@@ -8,7 +8,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ChatService } from './chat.service';
 import { AgenteColetorConversacionalService } from '../agentes/agente-coletor-conversacional.service';
 import { PrismaService } from '../prisma/prisma.service';

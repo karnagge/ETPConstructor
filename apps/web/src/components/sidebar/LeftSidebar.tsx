@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { useProjetosStore } from '../../stores/projects.store';
 import { ProjectTree } from './ProjectTree';
 import { CreateProjectDialog } from './CreateProjectDialog';
@@ -7,9 +7,10 @@ import { Button } from '../ui/button';
 
 interface LeftSidebarProps {
   className?: string;
+  onNewETP?: () => void;
 }
 
-export function LeftSidebar({ className }: LeftSidebarProps) {
+export function LeftSidebar({ className, onNewETP }: LeftSidebarProps) {
   const { projetos, loading, fetchProjetos } = useProjetosStore();
 
   useEffect(() => {
@@ -19,7 +20,29 @@ export function LeftSidebar({ className }: LeftSidebarProps) {
   return (
     <div className={className}>
       <div className="flex h-full flex-col">
-        {/* Header */}
+        {/* App Header */}
+        <div className="border-b border-neutral-200 px-4 py-4">
+          <h1 className="text-xl font-bold text-neutral-900">
+            ETP Constructor
+          </h1>
+          <p className="text-sm text-neutral-500">
+            Geração Automatizada de ETPs
+          </p>
+        </div>
+
+        {/* Novo ETP Button */}
+        <div className="border-b border-neutral-200 px-4 py-3">
+          <Button
+            onClick={onNewETP}
+            className="w-full justify-center gap-2"
+            size="default"
+          >
+            <FileText className="h-4 w-4" />
+            Novo ETP
+          </Button>
+        </div>
+
+        {/* Projects Header */}
         <div className="flex items-center justify-between border-b border-neutral-200 px-4 py-3">
           <h2 className="text-sm font-semibold text-neutral-900">Projetos</h2>
           <CreateProjectDialog>

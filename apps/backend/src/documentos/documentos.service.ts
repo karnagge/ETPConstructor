@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDocumentoDto, UpdateDocumentoDto } from './dto/create-documento.dto';
 import { VersoesService } from './versoes.service';
@@ -18,12 +18,25 @@ export class DocumentosService {
    * Create new documento
    */
   async create(dto: CreateDocumentoDto) {
+    // If projetoId is provided, resolve UUID to internal ID
+    let projetoInternalId: string | undefined = undefined;
+    if (dto.projetoId) {
+      const projeto = await this.prisma.projeto.findUnique({
+        where: { uuid: dto.projetoId },
+        select: { id: true },
+      });
+      if (!projeto) {
+        throw new NotFoundException(`Projeto com UUID ${dto.projetoId} não encontrado`);
+      }
+      projetoInternalId = projeto.id;
+    }
+
     return await this.prisma.documento.create({
       data: {
         titulo: dto.titulo,
         tipo: dto.tipo,
         usuarioId: dto.usuarioId,
-        projetoId: dto.projetoId,
+        projetoId: projetoInternalId,
         status: 'RASCUNHO',
         dadosColetados: {},
         conteudoSecoes: {},
@@ -85,7 +98,17 @@ export class DocumentosService {
     }
 
     if (filters.projetoId) {
-      where.projetoId = filters.projetoId;
+      // Resolve projeto UUID to internal ID
+      const projeto = await this.prisma.projeto.findUnique({
+        where: { uuid: filters.projetoId },
+        select: { id: true },
+      });
+      if (projeto) {
+        where.projetoId = projeto.id;
+      } else {
+        // If projeto not found, return empty results
+        return [];
+      }
     }
 
     if (filters.status) {
@@ -112,7 +135,7 @@ export class DocumentosService {
     });
 
     if (!documento) {
-      throw new Error(`Documento ${uuid} não encontrado`);
+      throw new NotFoundException(`Documento ${uuid} não encontrado`);
     }
 
     // If conteudoSecoes is being updated, create a version
@@ -124,9 +147,26 @@ export class DocumentosService {
       );
     }
 
+    // Resolve projetoId UUID to internal ID if provided
+    const updateData: any = { ...dto };
+    if (dto.projetoId !== undefined) {
+      if (dto.projetoId === null) {
+        updateData.projetoId = null;
+      } else {
+        const projeto = await this.prisma.projeto.findUnique({
+          where: { uuid: dto.projetoId },
+          select: { id: true },
+        });
+        if (!projeto) {
+          throw new NotFoundException(`Projeto com UUID ${dto.projetoId} não encontrado`);
+        }
+        updateData.projetoId = projeto.id;
+      }
+    }
+
     return await this.prisma.documento.update({
       where: { uuid },
-      data: dto,
+      data: updateData,
       include: {
         usuario: { select: { id: true, nome: true, email: true } },
         projeto: { select: { id: true, uuid: true, nome: true, cor: true } },

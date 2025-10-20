@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { VersoesService } from './versoes.service';
 
-@Controller('api/documentos/:documentoUuid/versoes')
+@Controller('documentos/:documentoUuid/versoes')
 export class VersoesController {
   constructor(private readonly versoesService: VersoesService) {}
 

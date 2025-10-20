@@ -21,7 +21,7 @@ import {
   UpdateProjetoDto,
 } from './dto/create-projeto.dto';
 
-@Controller('api/projetos')
+@Controller('projetos')
 export class ProjetosController {
   constructor(private readonly projetosService: ProjetosService) {}
 

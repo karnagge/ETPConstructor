@@ -121,7 +121,7 @@ export class VersoesService {
     await this.prisma.documento.update({
       where: { id: documento.id },
       data: {
-        conteudoSecoes: versaoAntiga.conteudoSecoes,
+        conteudoSecoes: versaoAntiga.conteudoSecoes as any,
         atualizadoEm: new Date(),
       },
     });

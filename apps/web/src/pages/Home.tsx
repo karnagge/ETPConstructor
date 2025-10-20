@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { ChatWindow } from '../components/chat/ChatWindow';
 import { RightSidebar } from '../components/sidebar/RightSidebar';
+import { LeftSidebar } from '../components/sidebar/LeftSidebar';
 import { useDocumentsStore } from '../stores/documents.store';
 import { useProjetosStore } from '../stores/projects.store';
-import { Select } from '../components/ui/select';
 import { Label } from '../components/ui/label';
+import { DEFAULT_USUARIO_ID } from '../config/test-data';
 
 /**
  * T059: Home page component
@@ -12,9 +13,7 @@ import { Label } from '../components/ui/label';
  */
 export function Home() {
   const {
-    documentos,
     activeDocumento,
-    isLoading,
     fetchDocumentos,
     createDocumento,
     setActiveDocumento,
@@ -28,10 +27,9 @@ export function Home() {
 
   // Load documentos and projetos on mount
   useEffect(() => {
-    // TODO: Get real user ID from auth context
-    const mockUserId = '00000000-0000-0000-0000-000000000001';
-    fetchDocumentos({ usuarioId: mockUserId });
-    fetchProjetos(mockUserId);
+    // Use real user ID from seed data
+    fetchDocumentos({ usuarioId: DEFAULT_USUARIO_ID });
+    fetchProjetos(DEFAULT_USUARIO_ID);
   }, [fetchDocumentos, fetchProjetos]);
 
   /**
@@ -44,13 +42,11 @@ export function Home() {
     }
 
     try {
-      // TODO: Get real user ID from auth context
-      const mockUserId = '00000000-0000-0000-0000-000000000001';
-
+      // Use real user ID from seed data
       const documento = await createDocumento({
         titulo: newETPTitle,
         tipo: 'ETP',
-        usuarioId: mockUserId,
+        usuarioId: DEFAULT_USUARIO_ID,
         projetoId: selectedProjetoId || undefined, // T122: Associate with project if selected
       });
 
@@ -65,85 +61,11 @@ export function Home() {
 
   return (
     <div className="flex h-screen bg-neutral-50">
-      {/* Left Sidebar - Document List */}
-      <aside className="w-64 border-r border-neutral-200 bg-white flex flex-col">
-        <div className="p-4 border-b border-neutral-200">
-          <h1 className="text-xl font-bold text-neutral-900">
-            ETP Constructor
-          </h1>
-          <p className="text-sm text-neutral-500">
-            Geração Automatizada de ETPs
-          </p>
-        </div>
-
-        {/* T060: Novo ETP button */}
-        <div className="p-4">
-          <button
-            onClick={() => setShowNewETPModal(true)}
-            className="w-full py-2 px-4 bg-blue-500 text-white rounded-lg hover:bg-blue-600 font-medium transition-colors flex items-center justify-center gap-2"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M12 4v16m8-8H4"
-              />
-            </svg>
-            Novo ETP
-          </button>
-        </div>
-
-        {/* Document list */}
-        <div className="flex-1 overflow-y-auto p-4">
-          {isLoading ? (
-            <p className="text-sm text-neutral-500">Carregando...</p>
-          ) : documentos.length === 0 ? (
-            <p className="text-sm text-neutral-500">
-              Nenhum documento ainda. Crie seu primeiro ETP!
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {documentos.map((doc) => (
-                <button
-                  key={doc.uuid}
-                  onClick={() => setActiveDocumento(doc)}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    activeDocumento?.uuid === doc.uuid
-                      ? 'bg-blue-50 border-2 border-blue-500'
-                      : 'bg-neutral-50 border-2 border-transparent hover:bg-neutral-100'
-                  }`}
-                >
-                  <p className="font-medium text-sm text-neutral-900 truncate">
-                    {doc.titulo}
-                  </p>
-                  <p className="text-xs text-neutral-500 mt-1">
-                    {new Date(doc.atualizadoEm).toLocaleDateString('pt-BR')}
-                  </p>
-                  <div className="flex items-center gap-2 mt-2">
-                    <span
-                      className={`text-xs px-2 py-0.5 rounded-full ${
-                        doc.status === 'CONCLUIDO'
-                          ? 'bg-green-100 text-green-700'
-                          : doc.status === 'EM_GERACAO'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-neutral-200 text-neutral-700'
-                      }`}
-                    >
-                      {doc.status}
-                    </span>
-                  </div>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </aside>
+      {/* Left Sidebar - Project Tree + Document List */}
+      <LeftSidebar
+        className="w-64 border-r border-neutral-200 bg-white"
+        onNewETP={() => setShowNewETPModal(true)}
+      />
 
       {/* Main Content - Chat or Empty State */}
       <main className="flex-1 flex flex-col">
@@ -213,18 +135,19 @@ export function Home() {
               <Label htmlFor="projeto" className="block mb-2">
                 Projeto (opcional)
               </Label>
-              <Select
+              <select
                 id="projeto"
                 value={selectedProjetoId}
                 onChange={(e) => setSelectedProjetoId(e.target.value)}
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
               >
                 <option value="">Sem projeto</option>
                 {projetos.map((projeto) => (
-                  <option key={projeto.uuid} value={projeto.id}>
+                  <option key={projeto.uuid} value={projeto.uuid}>
                     {projeto.nome}
                   </option>
                 ))}
-              </Select>
+              </select>
               <p className="text-xs text-neutral-500 mt-1">
                 Associe este ETP a um projeto para melhor organização
               </p>
