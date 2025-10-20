@@ -294,27 +294,27 @@
 
 #### Backend: Enhanced Legal Validation
 
-- [ ] T150 [P] [US5] Add 15+ legal validation rules to regras-legais.config.ts covering Lei 8.666/93, Lei 14.133/21, IN SEGES
-- [ ] T151 [P] [US5] Mark critical rules (e.g., valor_modalidade, prazo_minimo) that block generation in regras-legais.config.ts
-- [ ] T152 [US5] Implement ValidacoesController in apps/backend/src/validacao/validacoes.controller.ts (nested under documentos)
-- [ ] T153 [US5] Implement GET /api/documentos/:uuid/validacoes endpoint with filters (secaoId, valido, latest)
-- [ ] T154 [US5] Implement POST /api/documentos/:uuid/validacoes endpoint for manual re-validation
-- [ ] T155 [US5] Add 'latest' query logic filtering only most recent ValidacaoLegal per (documentoId, secaoId, regra)
-- [ ] T156 [US5] Return resumo object with totalRegras, regrasValidas, percentualConformidade, errosCriticos, alertas
-- [ ] T157 [US5] Implement section-level validation called by agents during generation (validates each section's conteudo)
-- [ ] T158 [US5] Emit 'alerta_secao' WebSocket event when validation detects issues during generation
+- [X] T150 [P] [US5] Add 15+ legal validation rules to regras-legais.config.ts covering Lei 8.666/93, Lei 14.133/21, IN SEGES
+- [X] T151 [P] [US5] Mark critical rules (e.g., valor_modalidade, prazo_minimo) that block generation in regras-legais.config.ts
+- [X] T152 [US5] Implement ValidacoesController in apps/backend/src/validacao/validacoes.controller.ts (nested under documentos)
+- [X] T153 [US5] Implement GET /api/documentos/:uuid/validacoes endpoint with filters (secaoId, valido, latest)
+- [X] T154 [US5] Implement POST /api/documentos/:uuid/validacoes endpoint for manual re-validation
+- [X] T155 [US5] Add 'latest' query logic filtering only most recent ValidacaoLegal per (documentoId, secaoId, regra)
+- [X] T156 [US5] Return resumo object with totalRegras, regrasValidas, percentualConformidade, errosCriticos, alertas
+- [X] T157 [US5] Implement section-level validation called by agents during generation (validates each section's conteudo)
+- [X] T158 [US5] Emit 'alerta_secao' WebSocket event when validation detects issues during generation
 
 #### Frontend: Compliance Panel
 
-- [ ] T159 [P] [US5] Create RightSidebar component in apps/web/src/components/sidebar/RightSidebar.tsx with collapsible compliance panel
-- [ ] T160 [P] [US5] Create CompliancePanel component in apps/web/src/components/compliance/CompliancePanel.tsx showing percentual gauge
-- [ ] T161 [P] [US5] Create AlertList component in apps/web/src/components/compliance/AlertList.tsx rendering alertas and erros
-- [ ] T162 [P] [US5] Create AlertItem component in apps/web/src/components/compliance/AlertItem.tsx with badge (Atenção/Erro Crítico)
-- [ ] T163 [US5] Implement fetchValidacoes() action in documents store calling GET /api/documentos/:uuid/validacoes
-- [ ] T164 [US5] Display fundamentacao legal (Lei X, Art. Y) in AlertItem tooltip or expandable section
-- [ ] T165 [US5] Add socket listener for 'validacao_completa' event updating compliance panel after data confirmation
-- [ ] T166 [US5] Add socket listener for 'alerta_secao' event appending real-time alerts during generation
-- [ ] T167 [US5] Disable "Gerar ETP" button if errosCriticos.length > 0 (critical errors block generation)
+- [X] T159 [P] [US5] Create RightSidebar component in apps/web/src/components/sidebar/RightSidebar.tsx with collapsible compliance panel
+- [X] T160 [P] [US5] Create CompliancePanel component in apps/web/src/components/compliance/CompliancePanel.tsx showing percentual gauge
+- [X] T161 [P] [US5] Create AlertList component in apps/web/src/components/compliance/AlertList.tsx rendering alertas and erros
+- [X] T162 [P] [US5] Create AlertItem component in apps/web/src/components/compliance/AlertItem.tsx with badge (Atenção/Erro Crítico)
+- [X] T163 [US5] Implement fetchValidacoes() action in documents store calling GET /api/documentos/:uuid/validacoes
+- [X] T164 [US5] Display fundamentacao legal (Lei X, Art. Y) in AlertItem tooltip or expandable section
+- [X] T165 [US5] Add socket listener for 'validacao_completa' event updating compliance panel after data confirmation
+- [X] T166 [US5] Add socket listener for 'alerta_secao' event appending real-time alerts during generation
+- [X] T167 [US5] Disable "Gerar ETP" button if errosCriticos.length > 0 (critical errors block generation)
 - [ ] T168 [US5] Show warning toast if generation attempted with alertas but no errosCriticos (allow with confirmation)
 - [ ] T169 [US5] Highlight sections with validation issues in SectionSelector using red/yellow indicators
 

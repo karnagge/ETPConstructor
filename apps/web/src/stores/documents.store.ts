@@ -72,6 +72,9 @@ interface DocumentsState {
   setActiveDocumento: (documento: Documento | null) => void;
   clearError: () => void;
 
+  // T163: Validation actions
+  fetchValidacoes: (documentoUuid: string) => Promise<any>;
+
   // T095: Generation actions (socket event handlers)
   onGenerationStarted: (data: { documentoId: string }) => void;
   onGenerationProgress: (data: { percent: number; phase: string }) => void;
@@ -220,6 +223,21 @@ export const useDocumentsStore = create<DocumentsState>((set) => ({
 
   clearError: () => {
     set({ error: null });
+  },
+
+  /**
+   * T163: Fetch validations for document
+   */
+  fetchValidacoes: async (documentoUuid: string) => {
+    try {
+      const data = await apiService.get(
+        `/documentos/${documentoUuid}/validacoes?latest=true`,
+      );
+      return data;
+    } catch (error: any) {
+      console.error('Error fetching validations:', error);
+      return { validacoes: [], resumo: null };
+    }
   },
 
   /**

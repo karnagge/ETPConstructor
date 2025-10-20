@@ -29,6 +29,10 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  // T167: Validation state for blocking generation
+  const [hasCriticalErrors, setHasCriticalErrors] = useState(false);
+  const [validationSummary, setValidationSummary] = useState<any>(null);
+  
   // T097, T098: Generation modal state
   const [showGenerationModal, setShowGenerationModal] = useState(false);
   
@@ -39,6 +43,7 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
     onSectionGenerated,
     onGenerationComplete,
     onGenerationError,
+    fetchValidacoes,
   } = useDocumentsStore();
 
   useEffect(() => {
@@ -100,6 +105,16 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       if (data.progresso === 100 && onColetaCompleta) {
         onColetaCompleta();
       }
+    });
+
+    // T165: Listen for validation complete
+    socketService.on('validacao_completa', (data: any) => {
+      console.log('[ChatWindow] Validation complete:', data);
+      setValidationSummary(data.resumo);
+      
+      // T167: Check for critical errors that block generation
+      const hasCritical = data.resumo?.erros_criticos?.length > 0;
+      setHasCriticalErrors(hasCritical);
     });
 
     // Listen for errors
@@ -202,6 +217,15 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       return;
     }
 
+    // T167: Block generation if critical errors exist
+    if (hasCriticalErrors) {
+      const errors = validationSummary?.erros_criticos || [];
+      alert(
+        `Não é possível gerar o ETP devido a erros críticos:\n\n${errors.join('\n')}\n\nPor favor, corrija estes problemas antes de gerar o documento.`
+      );
+      return;
+    }
+
     // Emit gerar_documento event
     socketService.emit('gerar_documento', { documentoId });
   };
@@ -237,14 +261,33 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       {/* Messages */}
       <MessageList messages={messages} />
 
-      {/* T056, T097: Confirmar Dados button (appears at 100%) */}
+      {/* T056, T097, T167: Confirmar Dados button (appears at 100%, disabled if critical errors) */}
       {progress === 100 && (
-        <div className="px-4 py-2 bg-green-50 border-t border-green-200">
+        <div className={`px-4 py-2 border-t ${hasCriticalErrors ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+          {hasCriticalErrors && validationSummary?.erros_criticos && (
+            <div className="mb-2 text-xs text-red-700">
+              <p className="font-semibold">⚠️ Erros Críticos Detectados:</p>
+              <ul className="list-disc list-inside mt-1">
+                {validationSummary.erros_criticos.slice(0, 2).map((erro: string, idx: number) => (
+                  <li key={idx}>{erro}</li>
+                ))}
+                {validationSummary.erros_criticos.length > 2 && (
+                  <li>...e mais {validationSummary.erros_criticos.length - 2} erro(s)</li>
+                )}
+              </ul>
+              <p className="mt-1">Verifique o painel de validação à direita.</p>
+            </div>
+          )}
           <button
             onClick={handleGerarETP}
-            className="w-full py-2 px-4 bg-green-500 text-white rounded-lg hover:bg-green-600 font-medium transition-colors"
+            disabled={hasCriticalErrors}
+            className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+              hasCriticalErrors
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
           >
-            ✓ Gerar ETP
+            {hasCriticalErrors ? '✗ Corrija os erros para gerar' : '✓ Gerar ETP'}
           </button>
         </div>
       )}

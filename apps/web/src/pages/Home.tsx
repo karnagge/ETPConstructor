@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ChatWindow } from '../components/chat/ChatWindow';
+import { RightSidebar } from '../components/sidebar/RightSidebar';
 import { useDocumentsStore } from '../stores/documents.store';
 import { useProjetosStore } from '../stores/projects.store';
 import { Select } from '../components/ui/select';
@@ -180,15 +181,8 @@ export function Home() {
         )}
       </main>
 
-      {/* Right Sidebar - Compliance (placeholder for Phase 7) */}
-      <aside className="w-80 border-l border-neutral-200 bg-white p-4">
-        <h3 className="font-semibold text-neutral-900 mb-2">
-          Validação Legal
-        </h3>
-        <p className="text-sm text-neutral-600">
-          O painel de conformidade será implementado na Phase 7 (User Story 5).
-        </p>
-      </aside>
+      {/* Right Sidebar - Compliance Panel (T159) */}
+      <RightSidebar />
 
       {/* New ETP Modal - T122: Added project selector */}
       {showNewETPModal && (
