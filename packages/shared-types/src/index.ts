@@ -2,3 +2,4 @@
 export * from './documento.types';
 export * from './projeto.types';
 export * from './validacao.types';
+export * from './agente-log.types';

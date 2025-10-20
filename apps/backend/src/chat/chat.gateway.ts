@@ -177,6 +177,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         return;
       }
 
+      // Setup log callback to emit agent activity to client
+      this.agenteColetorService.setLogCallback((log) => {
+        this.server.to(roomName).emit('agente_log', log);
+      });
+
       // Process message with agent (using sanitized input)
       const resposta = await this.agenteColetorService.processarMensagem(
         mensagemSanitizada,

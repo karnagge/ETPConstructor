@@ -176,13 +176,15 @@ Sua missão é coletar, através de conversa natural, os seguintes 11 campos obr
 
 **REGRAS DE CONDUTA**:
 
-1. **Seja proativo**: Use as ferramentas ANTES de perguntar ao usuário
-2. **Apresente sugestões**: Quando a ferramenta retornar dados, apresente como sugestões
-3. **Economize tempo do usuário**: Pergunte apenas o que não pode ser automatizado
-4. **Valide dados**: Use as ferramentas para validar informações fornecidas
-5. **Uma pergunta por vez**: Mas use ferramentas em paralelo quando possível
-6. **Contexto legal**: Mencione brevemente a legislação quando relevante
-7. **Progresso transparente**: Informe ao usuário quantos campos faltam coletar
+1. **🧠 MEMÓRIA PERFEITA**: Você DEVE LEMBRAR de TODOS os dados já coletados. NUNCA peça novamente algo já informado!
+2. **Seja proativo**: Use as ferramentas ANTES de perguntar ao usuário
+3. **Apresente sugestões**: Quando a ferramenta retornar dados, apresente como sugestões
+4. **Economize tempo do usuário**: Pergunte apenas o que não pode ser automatizado
+5. **Valide dados**: Use as ferramentas para validar informações fornecidas
+6. **Uma pergunta por vez**: Mas use ferramentas em paralelo quando possível
+7. **Contexto legal**: Mencione brevemente a legislação quando relevante
+8. **Progresso transparente**: Informe ao usuário quantos campos faltam coletar
+9. **Relembre quando necessário**: Se o usuário perguntar algo já informado, mostre os dados coletados
 
 **EXEMPLO DE USO INTELIGENTE**:
 
@@ -255,13 +257,37 @@ Você deve SEMPRE responder em JSON com a seguinte estrutura:
       total_campos: 11,
     };
 
-    const prompt = `Dados já coletados: ${JSON.stringify(contexto.dados_coletados, null, 2)}
+    // Build comprehensive context with ALL collected data for memory
+    const camposColetadosDetalhados = Object.entries(dadosAtuais)
+      .filter(([, valor]) => valor !== null && valor !== undefined && valor !== '')
+      .map(([campo, valor]) => {
+        if (Array.isArray(valor)) {
+          return `- ${campo}: [${valor.length} itens]\n  ${valor.map((v: any) => `  • ${v}`).join('\n  ')}`;
+        }
+        return `- ${campo}: ${valor}`;
+      })
+      .join('\n');
 
-Campos ainda faltantes: ${contexto.campos_faltantes.join(', ')}
+    const prompt = `📋 **CONTEXTO COMPLETO DA CONVERSA** (MEMORIZE TUDO):
 
-Mensagem do usuário: "${mensagemUsuario}"
+${camposColetadosDetalhados || '(Nenhum dado coletado ainda)'}
 
-Com base na mensagem do usuário, extraia dados relevantes e responda no formato JSON especificado.`;
+⚠️ **IMPORTANTE**: VOCÊ DEVE LEMBRAR DE TODOS OS DADOS ACIMA! Não peça novamente informações já fornecidas.
+
+📊 **Status da Coleta**:
+- Total de campos: 11
+- Campos coletados: ${11 - contexto.campos_faltantes.length}
+- Campos faltantes: ${contexto.campos_faltantes.join(', ') || 'nenhum'}
+- Progresso: ${this.calcularProgresso(dadosAtuais)}%
+
+💬 **Mensagem atual do usuário**: "${mensagemUsuario}"
+
+🎯 **Sua tarefa**:
+1. REVISE os dados já coletados acima
+2. IDENTIFIQUE se a mensagem atual adiciona/modifica algum campo
+3. Se o usuário perguntar sobre algo já informado, RELEMBRE os dados
+4. Use as ferramentas quando apropriado
+5. Responda no formato JSON especificado`;
 
     try {
       const respostaRaw = await this.executar(prompt, contexto);

@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { MessageList } from './MessageList';
 import { InputArea } from './InputArea';
 import { ProgressBar } from './ProgressBar';
+import { LogViewer, AgenteLogEvent } from './LogViewer';
 import { GenerationModal } from '../generation/GenerationModal';
 import { socketService } from '../../services/socket.service';
 import { useDocumentsStore } from '../../stores/documents.store';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
+import { Terminal } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -31,6 +33,10 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
+  // Agent logs state
+  const [agenteLogs, setAgenteLogs] = useState<AgenteLogEvent[]>([]);
+  const [showLogs, setShowLogs] = useState(false);
+  
   // T167: Validation state for blocking generation
   const [hasCriticalErrors, setHasCriticalErrors] = useState(false);
   const [validationSummary, setValidationSummary] = useState<any>(null);
@@ -45,7 +51,6 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
     onSectionGenerated,
     onGenerationComplete,
     onGenerationError,
-    fetchValidacoes,
   } = useDocumentsStore();
 
   useEffect(() => {
@@ -126,6 +131,12 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       alert(`Erro: ${data.message}`);
     });
 
+    // Listen for agent logs (NEW!)
+    socketService.on('agente_log', (log: AgenteLogEvent) => {
+      console.log('[ChatWindow] Agent log:', log);
+      setAgenteLogs((prev) => [...prev, log]);
+    });
+
     // T095: Listen for generation events
     socketService.on('geracao_iniciada', (data: any) => {
       console.log('[ChatWindow] Generation started:', data);
@@ -163,6 +174,7 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       socketService.off('campo_coletado');
       socketService.off('progresso_coleta');
       socketService.off('erro');
+      socketService.off('agente_log'); // Cleanup agent logs listener
       // Cleanup generation listeners
       socketService.off('geracao_iniciada');
       socketService.off('progresso_geracao');
@@ -248,83 +260,115 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-neutral-50">
-      {/* T055: Connection status indicator */}
-      <div className="border-b border-neutral-200 px-4 py-2 bg-white">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-neutral-900">
-            Coleta de Dados ETP
-          </h2>
-          <div className="flex items-center gap-2">
-            <div
-              className={`w-2 h-2 rounded-full ${
-                isConnected ? 'bg-green-500' : 'bg-red-500'
-              }`}
-            />
-            <span className="text-xs text-neutral-600">
-              {isConnected ? 'Conectado' : 'Desconectado'}
-            </span>
+    <div className="flex h-full">
+      {/* Main Chat Area */}
+      <div className={`flex flex-col bg-neutral-50 transition-all ${showLogs ? 'w-2/3' : 'w-full'}`}>
+        {/* T055: Connection status indicator */}
+        <div className="border-b border-neutral-200 px-4 py-2 bg-white">
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-neutral-900">
+              Coleta de Dados ETP
+            </h2>
+            <div className="flex items-center gap-3">
+              {/* Toggle Logs Button */}
+              <button
+                onClick={() => setShowLogs(!showLogs)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  showLogs
+                    ? 'bg-blue-500 text-white hover:bg-blue-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                title={showLogs ? 'Ocultar Logs' : 'Mostrar Logs dos Agentes'}
+              >
+                <Terminal className="h-4 w-4" />
+                {showLogs ? 'Ocultar Logs' : 'Logs'}
+                {agenteLogs.length > 0 && !showLogs && (
+                  <span className="bg-blue-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                    {agenteLogs.length}
+                  </span>
+                )}
+              </button>
+              
+              {/* Connection Status */}
+              <div className="flex items-center gap-2">
+                <div
+                  className={`w-2 h-2 rounded-full ${
+                    isConnected ? 'bg-green-500' : 'bg-red-500'
+                  }`}
+                />
+                <span className="text-xs text-neutral-600">
+                  {isConnected ? 'Conectado' : 'Desconectado'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Progress bar */}
+        <ProgressBar
+          progress={progress}
+          camposColetados={camposColetados}
+          camposFaltantes={camposFaltantes}
+        />
+
+        {/* Messages */}
+        <MessageList messages={messages} />
+
+        {/* T056, T097, T167: Confirmar Dados button (appears at 100%, disabled if critical errors) */}
+        {progress === 100 && (
+          <div className={`px-4 py-2 border-t ${hasCriticalErrors ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+            {hasCriticalErrors && validationSummary?.erros_criticos && (
+              <div className="mb-2 text-xs text-red-700">
+                <p className="font-semibold">⚠️ Erros Críticos Detectados:</p>
+                <ul className="list-disc list-inside mt-1">
+                  {validationSummary.erros_criticos.slice(0, 2).map((erro: string, idx: number) => (
+                    <li key={idx}>{erro}</li>
+                  ))}
+                  {validationSummary.erros_criticos.length > 2 && (
+                    <li>...e mais {validationSummary.erros_criticos.length - 2} erro(s)</li>
+                  )}
+                </ul>
+                <p className="mt-1">Verifique o painel de validação à direita.</p>
+              </div>
+            )}
+            <button
+              onClick={handleGerarETP}
+              disabled={hasCriticalErrors}
+              className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
+                hasCriticalErrors
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  : 'bg-green-500 text-white hover:bg-green-600'
+              }`}
+            >
+              {hasCriticalErrors ? '✗ Corrija os erros para gerar' : '✓ Gerar ETP'}
+            </button>
+          </div>
+        )}
+
+        {/* Input area */}
+        <InputArea
+          onSendMessage={handleSendMessage}
+          disabled={!isConnected || isLoading}
+        />
+
+        {/* Helper: Start collection button (if no messages) */}
+        {messages.length === 0 && (
+          <div className="absolute inset-0 flex items-center justify-center bg-neutral-50/90">
+            <button
+              onClick={handleIniciarColeta}
+              disabled={!isConnected}
+              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-neutral-300 disabled:cursor-not-allowed font-medium transition-colors"
+            >
+              Iniciar Coleta de Dados
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Progress bar */}
-      <ProgressBar
-        progress={progress}
-        camposColetados={camposColetados}
-        camposFaltantes={camposFaltantes}
-      />
-
-      {/* Messages */}
-      <MessageList messages={messages} />
-
-      {/* T056, T097, T167: Confirmar Dados button (appears at 100%, disabled if critical errors) */}
-      {progress === 100 && (
-        <div className={`px-4 py-2 border-t ${hasCriticalErrors ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
-          {hasCriticalErrors && validationSummary?.erros_criticos && (
-            <div className="mb-2 text-xs text-red-700">
-              <p className="font-semibold">⚠️ Erros Críticos Detectados:</p>
-              <ul className="list-disc list-inside mt-1">
-                {validationSummary.erros_criticos.slice(0, 2).map((erro: string, idx: number) => (
-                  <li key={idx}>{erro}</li>
-                ))}
-                {validationSummary.erros_criticos.length > 2 && (
-                  <li>...e mais {validationSummary.erros_criticos.length - 2} erro(s)</li>
-                )}
-              </ul>
-              <p className="mt-1">Verifique o painel de validação à direita.</p>
-            </div>
-          )}
-          <button
-            onClick={handleGerarETP}
-            disabled={hasCriticalErrors}
-            className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
-              hasCriticalErrors
-                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-green-500 text-white hover:bg-green-600'
-            }`}
-          >
-            {hasCriticalErrors ? '✗ Corrija os erros para gerar' : '✓ Gerar ETP'}
-          </button>
-        </div>
-      )}
-
-      {/* Input area */}
-      <InputArea
-        onSendMessage={handleSendMessage}
-        disabled={!isConnected || isLoading}
-      />
-
-      {/* Helper: Start collection button (if no messages) */}
-      {messages.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-neutral-50/90">
-          <button
-            onClick={handleIniciarColeta}
-            disabled={!isConnected}
-            className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:bg-neutral-300 disabled:cursor-not-allowed font-medium transition-colors"
-          >
-            Iniciar Coleta de Dados
-          </button>
+      {/* Log Viewer Panel (Right Side) */}
+      {showLogs && (
+        <div className="w-1/3 min-w-[400px]">
+          <LogViewer logs={agenteLogs} isVisible={showLogs} />
         </div>
       )}
 

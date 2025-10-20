@@ -20,8 +20,9 @@ export function InputArea({ onSendMessage, disabled = false }: InputAreaProps) {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
-    // Ctrl+Enter or Cmd+Enter to send
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    // Enter to send (without Shift)
+    // Shift+Enter to add new line
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSend();
     }
@@ -34,7 +35,7 @@ export function InputArea({ onSendMessage, disabled = false }: InputAreaProps) {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Digite sua mensagem... (Ctrl+Enter para enviar)"
+          placeholder="Digite sua mensagem... (Enter para enviar, Shift+Enter para nova linha)"
           disabled={disabled}
           className="flex-1 resize-none border border-neutral-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-neutral-100 disabled:cursor-not-allowed"
           rows={3}
@@ -48,7 +49,7 @@ export function InputArea({ onSendMessage, disabled = false }: InputAreaProps) {
         </button>
       </div>
       <p className="text-xs text-neutral-500 mt-2">
-        Dica: Pressione Ctrl+Enter para enviar rapidamente
+        Dica: Pressione Enter para enviar, Shift+Enter para nova linha
       </p>
     </div>
   );

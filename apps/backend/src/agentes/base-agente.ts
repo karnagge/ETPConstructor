@@ -1,4 +1,43 @@
 import Anthropic from '@anthropic-ai/sdk';
+import { randomUUID } from 'crypto';
+
+/**
+ * Types for agent activity logging
+ */
+export type LogEventType =
+  | 'agent_start'
+  | 'agent_end'
+  | 'tool_call_start'
+  | 'tool_call_end'
+  | 'tool_call_error'
+  | 'thinking'
+  | 'response_generated'
+  | 'error';
+
+export interface ToolCallLog {
+  tool_name: string;
+  input_parameters: Record<string, any>;
+  started_at: string;
+  ended_at?: string;
+  duration_ms?: number;
+  result?: any;
+  error?: string;
+  success: boolean;
+}
+
+export interface AgenteLogEvent {
+  id: string;
+  timestamp: string;
+  event_type: LogEventType;
+  agent_name: string;
+  message: string;
+  data?: {
+    tool_call?: ToolCallLog;
+    response_text?: string;
+    error?: string;
+    metadata?: Record<string, any>;
+  };
+}
 
 /**
  * Tool definition for Claude SDK
@@ -17,12 +56,16 @@ export interface AgenteToolDefinition {
  * BaseAgente - Abstract base class for all AI agents
  * Wraps Anthropic Claude SDK with common functionality
  * Now supports custom HTTP tools for fetching real-world data
+ * AND real-time activity logging for UI visibility
  */
 export abstract class BaseAgente {
   protected model = 'claude-sonnet-4-20250514';
   protected apiKey: string;
   protected anthropic: Anthropic;
   protected toolHandlers: Map<string, (params: any) => Promise<any>> = new Map();
+  
+  // Log callback for real-time UI updates
+  private logCallback?: (log: AgenteLogEvent) => void;
 
   constructor() {
     this.apiKey = process.env.ANTHROPIC_API_KEY || '';
@@ -35,6 +78,36 @@ export abstract class BaseAgente {
     this.anthropic = new Anthropic({
       apiKey: this.apiKey,
     });
+  }
+
+  /**
+   * Set callback for real-time log events
+   * @param callback - Function to receive log events
+   */
+  setLogCallback(callback: (log: AgenteLogEvent) => void): void {
+    this.logCallback = callback;
+  }
+
+  /**
+   * Emit a log event
+   */
+  protected emitLog(
+    event_type: LogEventType,
+    message: string,
+    data?: AgenteLogEvent['data'],
+  ): void {
+    if (!this.logCallback) return;
+
+    const log: AgenteLogEvent = {
+      id: randomUUID(),
+      timestamp: new Date().toISOString(),
+      event_type,
+      agent_name: this.nome,
+      message,
+      data,
+    };
+
+    this.logCallback(log);
   }
 
   /**
@@ -86,6 +159,11 @@ export abstract class BaseAgente {
   protected async executar(mensagem: string, _contexto?: any): Promise<string> {
     console.log(`[${this.nome}] Executing with message:`, mensagem.substring(0, 100) + '...');
     
+    // Log: Agent started
+    this.emitLog('agent_start', `${this.nome} iniciou processamento`, {
+      metadata: { message_preview: mensagem.substring(0, 200) },
+    });
+    
     try {
       const messages: Anthropic.MessageParam[] = [
         {
@@ -107,6 +185,9 @@ export abstract class BaseAgente {
       const tools = this.toolDefinitions;
       if (tools.length > 0) {
         requestParams.tools = tools as any;
+        this.emitLog('thinking', `${this.nome} tem ${tools.length} ferramentas disponíveis`, {
+          metadata: { tools: tools.map(t => t.name) },
+        });
       }
 
       let response = await this.anthropic.messages.create(requestParams);
@@ -114,6 +195,8 @@ export abstract class BaseAgente {
       // Handle tool use (function calling) loop
       while (response.stop_reason === 'tool_use') {
         console.log(`[${this.nome}] Tool use detected, processing...`);
+        
+        this.emitLog('thinking', `${this.nome} decidiu usar ferramentas`);
         
         // Extract tool use blocks
         const toolUses = response.content.filter((block) => block.type === 'tool_use');
@@ -128,14 +211,43 @@ export abstract class BaseAgente {
             
             console.log(`[${this.nome}] Executing tool: ${toolName}`, toolInput);
             
+            const toolCallStartTime = Date.now();
+            
+            // Log: Tool call started
+            this.emitLog('tool_call_start', `Chamando ferramenta: ${toolName}`, {
+              tool_call: {
+                tool_name: toolName,
+                input_parameters: toolInput as Record<string, any>,
+                started_at: new Date().toISOString(),
+                success: false,
+              },
+            });
+            
             // Execute tool handler
             const handler = this.toolHandlers.get(toolName);
             if (!handler) {
-              throw new Error(`Tool handler not found: ${toolName}`);
+              const errorMsg = `Tool handler not found: ${toolName}`;
+              this.emitLog('tool_call_error', errorMsg);
+              throw new Error(errorMsg);
             }
             
             try {
               const result = await handler(toolInput);
+              const duration = Date.now() - toolCallStartTime;
+              
+              // Log: Tool call succeeded
+              this.emitLog('tool_call_end', `Ferramenta ${toolName} concluída com sucesso (${duration}ms)`, {
+                tool_call: {
+                  tool_name: toolName,
+                  input_parameters: toolInput as Record<string, any>,
+                  started_at: new Date(toolCallStartTime).toISOString(),
+                  ended_at: new Date().toISOString(),
+                  duration_ms: duration,
+                  result,
+                  success: true,
+                },
+              });
+              
               toolResults.push({
                 role: 'user',
                 content: [
@@ -149,6 +261,21 @@ export abstract class BaseAgente {
             } catch (error) {
               console.error(`[${this.nome}] Tool execution error:`, error);
               const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+              const duration = Date.now() - toolCallStartTime;
+              
+              // Log: Tool call failed
+              this.emitLog('tool_call_error', `Ferramenta ${toolName} falhou: ${errorMessage}`, {
+                tool_call: {
+                  tool_name: toolName,
+                  input_parameters: toolInput as Record<string, any>,
+                  started_at: new Date(toolCallStartTime).toISOString(),
+                  ended_at: new Date().toISOString(),
+                  duration_ms: duration,
+                  error: errorMessage,
+                  success: false,
+                },
+              });
+              
               toolResults.push({
                 role: 'user',
                 content: [
@@ -173,6 +300,8 @@ export abstract class BaseAgente {
         // Add tool results
         messages.push(...toolResults);
         
+        this.emitLog('thinking', `${this.nome} processando resultados das ferramentas`);
+        
         // Continue conversation with tool results
         response = await this.anthropic.messages.create({
           ...requestParams,
@@ -183,12 +312,29 @@ export abstract class BaseAgente {
       // Extract final text content from response
       const textContent = response.content.find((block) => block.type === 'text');
       if (textContent && textContent.type === 'text') {
-        return textContent.text;
+        const responseText = textContent.text;
+        
+        // Log: Response generated
+        this.emitLog('response_generated', `${this.nome} gerou resposta`, {
+          response_text: responseText.substring(0, 500),
+        });
+        
+        // Log: Agent finished
+        this.emitLog('agent_end', `${this.nome} finalizou processamento com sucesso`);
+        
+        return responseText;
       }
 
       throw new Error('No text content in final response');
     } catch (error) {
       console.error(`[${this.nome}] Execution error:`, error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      
+      // Log: Error
+      this.emitLog('error', `${this.nome} encontrou erro: ${errorMessage}`, {
+        error: errorMessage,
+      });
+      
       throw error;
     }
   }
