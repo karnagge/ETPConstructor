@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { DocumentosController } from './documentos.controller';
 import { DocumentosService } from './documentos.service';
+import { VersoesController } from './versoes.controller';
+import { VersoesService } from './versoes.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { GeracaoService } from '../geracao/geracao.service';
 import { DocxBuilderService } from '../geracao/docx-builder.service';
@@ -12,9 +14,10 @@ import { AgenteGestaoContratualService } from '../agentes/agente-gestao-contratu
 import { ValidacaoLegalService } from '../validacao/validacao-legal.service';
 
 @Module({
-  controllers: [DocumentosController],
+  controllers: [DocumentosController, VersoesController],
   providers: [
     DocumentosService,
+    VersoesService,
     PrismaService,
     GeracaoService,
     DocxBuilderService,
@@ -25,6 +28,6 @@ import { ValidacaoLegalService } from '../validacao/validacao-legal.service';
     AgenteGestaoContratualService,
     ValidacaoLegalService,
   ],
-  exports: [DocumentosService, GeracaoService, ValidacaoLegalService],
+  exports: [DocumentosService, VersoesService, GeracaoService, ValidacaoLegalService],
 })
 export class DocumentosModule {}

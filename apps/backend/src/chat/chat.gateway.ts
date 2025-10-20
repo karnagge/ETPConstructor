@@ -363,6 +363,80 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   /**
+   * T131: editar_secao - Handle section editing with debounce (2 seconds)
+   * This is called from client after debounce on editor onChange
+   */
+  @SubscribeMessage('editar_secao')
+  async handleEditarSecao(
+    @ConnectedSocket() client: Socket,
+    @MessageBody()
+    data: {
+      documentoId: string;
+      secaoId: string;
+      conteudo: any;
+    },
+  ) {
+    try {
+      const { documentoId, secaoId, conteudo } = data;
+
+      console.log(
+        `[ChatGateway] Editing section ${secaoId} for documento ${documentoId}`,
+      );
+
+      // Load current document
+      const documento = await this.prisma.documento.findUnique({
+        where: { uuid: documentoId },
+      });
+
+      if (!documento) {
+        client.emit('erro', { message: 'Documento não encontrado' });
+        return;
+      }
+
+      // Update conteudoSecoes with new section content
+      const conteudoSecoes = (documento.conteudoSecoes as any) || {};
+      conteudoSecoes[secaoId] = {
+        ...(conteudoSecoes[secaoId] || {}),
+        conteudo,
+        atualizadoEm: new Date().toISOString(),
+      };
+
+      // Update document in database (this will trigger version creation via DocumentosService)
+      const updated = await this.prisma.documento.update({
+        where: { uuid: documentoId },
+        data: {
+          conteudoSecoes,
+          atualizadoEm: new Date(),
+        },
+        include: {
+          versoes: {
+            orderBy: { numeroVersao: 'desc' },
+            take: 1,
+          },
+        },
+      });
+
+      // Get latest version number
+      const numeroVersao = updated.versoes[0]?.numeroVersao || 1;
+
+      // Emit secao_salva event to all clients in room
+      const roomName = `doc-${documentoId}`;
+      this.server.to(roomName).emit('secao_salva', {
+        secaoId,
+        numeroVersao,
+        timestamp: new Date().toISOString(),
+      });
+
+      console.log(
+        `[ChatGateway] Section ${secaoId} saved successfully (version ${numeroVersao})`,
+      );
+    } catch (error) {
+      console.error('[ChatGateway] Error in editar_secao:', error);
+      client.emit('erro', { message: 'Erro ao salvar seção' });
+    }
+  }
+
+  /**
    * Helper to map percentage to section ID
    */
   private getSecaoIdForPercentage(percentage: number): string {

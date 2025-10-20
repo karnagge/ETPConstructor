@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import { ChatWindow } from '../components/chat/ChatWindow';
 import { useDocumentsStore } from '../stores/documents.store';
+import { useProjetosStore } from '../stores/projects.store';
+import { Select } from '../components/ui/select';
+import { Label } from '../components/ui/label';
 
 /**
  * T059: Home page component
@@ -16,18 +19,22 @@ export function Home() {
     setActiveDocumento,
   } = useDocumentsStore();
 
+  const { projetos, fetchProjetos } = useProjetosStore();
+
   const [showNewETPModal, setShowNewETPModal] = useState(false);
   const [newETPTitle, setNewETPTitle] = useState('');
+  const [selectedProjetoId, setSelectedProjetoId] = useState<string>('');
 
-  // Load documentos on mount (mock user for now)
+  // Load documentos and projetos on mount
   useEffect(() => {
     // TODO: Get real user ID from auth context
     const mockUserId = '00000000-0000-0000-0000-000000000001';
     fetchDocumentos({ usuarioId: mockUserId });
-  }, [fetchDocumentos]);
+    fetchProjetos(mockUserId);
+  }, [fetchDocumentos, fetchProjetos]);
 
   /**
-   * T060: Handle "Novo ETP" button click
+   * T060 + T122: Handle "Novo ETP" button click with optional project association
    */
   const handleCreateETP = async () => {
     if (!newETPTitle.trim()) {
@@ -43,10 +50,12 @@ export function Home() {
         titulo: newETPTitle,
         tipo: 'ETP',
         usuarioId: mockUserId,
+        projetoId: selectedProjetoId || undefined, // T122: Associate with project if selected
       });
 
       setShowNewETPModal(false);
       setNewETPTitle('');
+      setSelectedProjetoId('');
       setActiveDocumento(documento);
     } catch (error) {
       alert('Erro ao criar ETP');
@@ -181,26 +190,58 @@ export function Home() {
         </p>
       </aside>
 
-      {/* New ETP Modal */}
+      {/* New ETP Modal - T122: Added project selector */}
       {showNewETPModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <h3 className="text-lg font-semibold text-neutral-900 mb-4">
               Criar Novo ETP
             </h3>
-            <input
-              type="text"
-              value={newETPTitle}
-              onChange={(e) => setNewETPTitle(e.target.value)}
-              placeholder="Título do ETP (ex: ETP - Contratação de TI)"
-              className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              autoFocus
-            />
-            <div className="flex gap-2 mt-4">
+            
+            {/* Title Input */}
+            <div className="mb-4">
+              <Label htmlFor="titulo" className="block mb-2">
+                Título do ETP <span className="text-red-500">*</span>
+              </Label>
+              <input
+                id="titulo"
+                type="text"
+                value={newETPTitle}
+                onChange={(e) => setNewETPTitle(e.target.value)}
+                placeholder="Ex: ETP - Contratação de Serviços de TI"
+                className="w-full px-4 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                autoFocus
+              />
+            </div>
+
+            {/* Project Selector - T122 */}
+            <div className="mb-4">
+              <Label htmlFor="projeto" className="block mb-2">
+                Projeto (opcional)
+              </Label>
+              <Select
+                id="projeto"
+                value={selectedProjetoId}
+                onChange={(e) => setSelectedProjetoId(e.target.value)}
+              >
+                <option value="">Sem projeto</option>
+                {projetos.map((projeto) => (
+                  <option key={projeto.uuid} value={projeto.id}>
+                    {projeto.nome}
+                  </option>
+                ))}
+              </Select>
+              <p className="text-xs text-neutral-500 mt-1">
+                Associe este ETP a um projeto para melhor organização
+              </p>
+            </div>
+
+            <div className="flex gap-2 mt-6">
               <button
                 onClick={() => {
                   setShowNewETPModal(false);
                   setNewETPTitle('');
+                  setSelectedProjetoId('');
                 }}
                 className="flex-1 py-2 px-4 bg-neutral-200 text-neutral-700 rounded-lg hover:bg-neutral-300 transition-colors"
               >

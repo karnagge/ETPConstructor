@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDocumentoDto, UpdateDocumentoDto } from './dto/create-documento.dto';
+import { VersoesService } from './versoes.service';
 
 /**
  * T041: DocumentosService
@@ -8,7 +9,10 @@ import { CreateDocumentoDto, UpdateDocumentoDto } from './dto/create-documento.d
  */
 @Injectable()
 export class DocumentosService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly versoesService: VersoesService,
+  ) {}
 
   /**
    * Create new documento
@@ -100,8 +104,26 @@ export class DocumentosService {
 
   /**
    * Update documento
+   * Creates a new version if conteudoSecoes is updated
    */
   async update(uuid: string, dto: UpdateDocumentoDto) {
+    const documento = await this.prisma.documento.findUnique({
+      where: { uuid },
+    });
+
+    if (!documento) {
+      throw new Error(`Documento ${uuid} não encontrado`);
+    }
+
+    // If conteudoSecoes is being updated, create a version
+    if (dto.conteudoSecoes && dto.conteudoSecoes !== documento.conteudoSecoes) {
+      await this.versoesService.createVersion(
+        documento.id,
+        dto.conteudoSecoes,
+        'Atualização manual do conteúdo',
+      );
+    }
+
     return await this.prisma.documento.update({
       where: { uuid },
       data: dto,

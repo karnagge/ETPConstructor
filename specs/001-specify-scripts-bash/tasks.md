@@ -226,8 +226,8 @@
 - [X] T118 [US3] Add "+" button in sidebar header opening CreateProjectDialog
 - [X] T119 [US3] Create CreateProjectDialog component in apps/web/src/components/sidebar/CreateProjectDialog.tsx with nome, cor, descricao fields
 - [X] T120 [US3] Implement color picker in CreateProjectDialog using shadcn Popover + color swatches
-- [ ] T121 [US3] Connect DocumentItem click handler to load documento in main content area
-- [ ] T122 [US3] Add project selector dropdown to "Novo ETP" modal for associating document to project
+- [X] T121 [US3] Connect DocumentItem click handler to load documento in main content area
+- [X] T122 [US3] Add project selector dropdown to "Novo ETP" modal for associating document to project
 
 **Checkpoint**: User Story 3 complete - projects enable organization of multiple ETPs
 
@@ -243,42 +243,42 @@
 
 #### Backend: Versioning Logic
 
-- [ ] T123 [P] [US4] Create VersoesController in apps/backend/src/documentos/versoes.controller.ts (nested under documentos)
-- [ ] T124 [P] [US4] Create VersoesService in apps/backend/src/documentos/versoes.service.ts handling version CRUD
-- [ ] T125 [US4] Implement createVersion() method auto-incrementing numeroVersao (MAX + 1) in VersoesService
-- [ ] T126 [US4] Implement version creation trigger when conteudoSecoes updated via PATCH /api/documentos/:uuid
-- [ ] T127 [US4] Implement GET /api/documentos/:uuid/versoes endpoint listing all versions ordered by numeroVersao DESC
-- [ ] T128 [US4] Implement GET /api/documentos/:uuid/versoes/:numeroVersao endpoint fetching specific version
-- [ ] T129 [US4] Implement POST /api/documentos/:uuid/versoes/:numeroVersao/restaurar endpoint creating new version with old content
-- [ ] T130 [US4] Implement generateDiff() utility method comparing two conteudoSecoes JSONs and generating alteracoes text
+- [X] T123 [P] [US4] Create VersoesController in apps/backend/src/documentos/versoes.controller.ts (nested under documentos)
+- [X] T124 [P] [US4] Create VersoesService in apps/backend/src/documentos/versoes.service.ts handling version CRUD
+- [X] T125 [US4] Implement createVersion() method auto-incrementing numeroVersao (MAX + 1) in VersoesService
+- [X] T126 [US4] Implement version creation trigger when conteudoSecoes updated via PATCH /api/documentos/:uuid
+- [X] T127 [US4] Implement GET /api/documentos/:uuid/versoes endpoint listing all versions ordered by numeroVersao DESC
+- [X] T128 [US4] Implement GET /api/documentos/:uuid/versoes/:numeroVersao endpoint fetching specific version
+- [X] T129 [US4] Implement POST /api/documentos/:uuid/versoes/:numeroVersao/restaurar endpoint creating new version with old content
+- [X] T130 [US4] Implement generateDiff() utility method comparing two conteudoSecoes JSONs and generating alteracoes text
 
 #### Backend: Section Editing WebSocket
 
-- [ ] T131 [US4] Implement 'editar_secao' WebSocket event handler in ChatGateway with 2-second debounce
-- [ ] T132 [US4] Update Documento.conteudoSecoes[secaoId] in database after debounce period
-- [ ] T133 [US4] Create new VersaoDocumento entry after successful save
-- [ ] T134 [US4] Emit 'secao_salva' event with numeroVersao and timestamp back to client
+- [X] T131 [US4] Implement 'editar_secao' WebSocket event handler in ChatGateway with 2-second debounce
+- [X] T132 [US4] Update Documento.conteudoSecoes[secaoId] in database after debounce period
+- [X] T133 [US4] Create new VersaoDocumento entry after successful save
+- [X] T134 [US4] Emit 'secao_salva' event with numeroVersao and timestamp back to client
 
 #### Frontend: Document Editor
 
-- [ ] T135 [P] [US4] Create DocumentEditor component in apps/web/src/components/editor/DocumentEditor.tsx using TipTap React
-- [ ] T136 [P] [US4] Configure TipTap extensions (StarterKit, Bold, Italic, BulletList, OrderedList, Heading)
-- [ ] T137 [P] [US4] Create EditorToolbar component in apps/web/src/components/editor/EditorToolbar.tsx with formatting buttons
-- [ ] T138 [P] [US4] Create SectionSelector component in apps/web/src/components/editor/SectionSelector.tsx showing 9 sections
-- [ ] T139 [US4] Implement onChange debounce (2 seconds) before emitting 'editar_secao' socket event
-- [ ] T140 [US4] Display "Salvo às HH:MM" badge after receiving 'secao_salva' event
-- [ ] T141 [US4] Create DocumentView page in apps/web/src/pages/DocumentView.tsx with split view (sections list + editor)
-- [ ] T142 [US4] Load documento.conteudoSecoes[secaoId] into TipTap editor when section selected
+- [X] T135 [P] [US4] Create DocumentEditor component in apps/web/src/components/editor/DocumentEditor.tsx using TipTap React
+- [X] T136 [P] [US4] Configure TipTap extensions (StarterKit, Bold, Italic, BulletList, OrderedList, Heading)
+- [X] T137 [P] [US4] Create EditorToolbar component in apps/web/src/components/editor/EditorToolbar.tsx with formatting buttons
+- [X] T138 [P] [US4] Create SectionSelector component in apps/web/src/components/editor/SectionSelector.tsx showing 9 sections
+- [X] T139 [US4] Implement onChange debounce (2 seconds) before emitting 'editar_secao' socket event
+- [X] T140 [US4] Display "Salvo às HH:MM" badge after receiving 'secao_salva' event
+- [X] T141 [US4] Create DocumentView page in apps/web/src/pages/DocumentView.tsx with split view (sections list + editor)
+- [X] T142 [US4] Load documento.conteudoSecoes[secaoId] into TipTap editor when section selected
 
 #### Frontend: Version History
 
-- [ ] T143 [P] [US4] Create VersionHistory component in apps/web/src/components/editor/VersionHistory.tsx modal listing versions
-- [ ] T144 [P] [US4] Create VersionItem component in apps/web/src/components/editor/VersionItem.tsx showing numeroVersao, timestamp, alteracoes
-- [ ] T145 [US4] Implement fetchVersions() action in documents store calling GET /api/documentos/:uuid/versoes
-- [ ] T146 [US4] Add "Ver versões" button in DocumentView toolbar opening VersionHistory modal
-- [ ] T147 [US4] Implement "Restaurar" button in VersionItem calling POST /api/documentos/:uuid/versoes/:numeroVersao/restaurar
-- [ ] T148 [US4] Show confirmation dialog before restoring version (warns it creates new version, not overwrite)
-- [ ] T149 [US4] Reload documento after successful restoration showing restored content in editor
+- [X] T143 [P] [US4] Create VersionHistory component in apps/web/src/components/editor/VersionHistory.tsx modal listing versions
+- [X] T144 [P] [US4] Create VersionItem component in apps/web/src/components/editor/VersionItem.tsx showing numeroVersao, timestamp, alteracoes
+- [X] T145 [US4] Implement fetchVersions() action in documents store calling GET /api/documentos/:uuid/versoes
+- [X] T146 [US4] Add "Ver versões" button in DocumentView toolbar opening VersionHistory modal
+- [X] T147 [US4] Implement "Restaurar" button in VersionItem calling POST /api/documentos/:uuid/versoes/:numeroVersao/restaurar
+- [X] T148 [US4] Show confirmation dialog before restoring version (warns it creates new version, not overwrite)
+- [X] T149 [US4] Reload documento after successful restoration showing restored content in editor
 
 **Checkpoint**: User Story 4 complete - documents can be edited with full version control
 

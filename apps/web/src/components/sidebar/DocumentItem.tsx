@@ -1,4 +1,5 @@
 import { Circle, Clock, CheckCircle2, FileText } from 'lucide-react';
+import { useDocumentsStore } from '../../stores/documents.store';
 import { cn } from '../../lib/utils';
 
 interface DocumentoListItem {
@@ -13,7 +14,6 @@ interface DocumentoListItem {
 interface DocumentItemProps {
   documento: DocumentoListItem;
   projetoCor: string;
-  onClick?: (documentoUuid: string) => void;
 }
 
 const statusIcons = {
@@ -30,20 +30,24 @@ const statusColors = {
   ARQUIVADO: 'text-neutral-300',
 };
 
-export function DocumentItem({ documento, projetoCor, onClick }: DocumentItemProps) {
+export function DocumentItem({ documento, projetoCor }: DocumentItemProps) {
+  const { fetchDocumento, activeDocumento } = useDocumentsStore();
   const StatusIcon = statusIcons[documento.status as keyof typeof statusIcons] || FileText;
   const statusColor = statusColors[documento.status as keyof typeof statusColors] || 'text-neutral-400';
+  const isActive = activeDocumento?.uuid === documento.uuid;
 
-  const handleClick = () => {
-    onClick?.(documento.uuid);
+  const handleClick = async () => {
+    await fetchDocumento(documento.uuid);
   };
 
   return (
     <button
       onClick={handleClick}
       className={cn(
-        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-neutral-100',
-        'transition-colors duration-150'
+        'flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm transition-colors duration-150',
+        isActive
+          ? 'bg-neutral-200 text-neutral-900 font-medium'
+          : 'hover:bg-neutral-100 text-neutral-700'
       )}
     >
       {/* Status Icon */}
