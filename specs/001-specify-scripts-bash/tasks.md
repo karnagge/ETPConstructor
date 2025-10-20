@@ -203,29 +203,29 @@
 
 #### Backend: Projects API
 
-- [ ] T101 [P] [US3] Create ProjetosController in apps/backend/src/projetos/projetos.controller.ts with REST endpoints
-- [ ] T102 [P] [US3] Create ProjetosService in apps/backend/src/projetos/projetos.service.ts with business logic
-- [ ] T103 [P] [US3] Implement POST /api/projetos endpoint (create project) in ProjetosController
-- [ ] T104 [P] [US3] Implement GET /api/projetos endpoint with usuarioId filter in ProjetosController
-- [ ] T105 [P] [US3] Implement GET /api/projetos/:uuid endpoint (fetch single project with documents) in ProjetosController
-- [ ] T106 [P] [US3] Implement PATCH /api/projetos/:uuid endpoint (update nome, cor, descricao) in ProjetosController
-- [ ] T107 [P] [US3] Implement DELETE /api/projetos/:uuid endpoint (hard delete, SET NULL on documentos) in ProjetosController
-- [ ] T108 [P] [US3] Create Zod validation schemas for projeto DTOs in apps/backend/src/projetos/dto/create-projeto.dto.ts
-- [ ] T109 [US3] Add projetoId association logic to DocumentosService.create() and update() methods
+- [X] T101 [P] [US3] Create ProjetosController in apps/backend/src/projetos/projetos.controller.ts with REST endpoints
+- [X] T102 [P] [US3] Create ProjetosService in apps/backend/src/projetos/projetos.service.ts with business logic
+- [X] T103 [P] [US3] Implement POST /api/projetos endpoint (create project) in ProjetosController
+- [X] T104 [P] [US3] Implement GET /api/projetos endpoint with usuarioId filter in ProjetosController
+- [X] T105 [P] [US3] Implement GET /api/projetos/:uuid endpoint (fetch single project with documents) in ProjetosController
+- [X] T106 [P] [US3] Implement PATCH /api/projetos/:uuid endpoint (update nome, cor, descricao) in ProjetosController
+- [X] T107 [P] [US3] Implement DELETE /api/projetos/:uuid endpoint (hard delete, SET NULL on documentos) in ProjetosController
+- [X] T108 [P] [US3] Create Zod validation schemas for projeto DTOs in apps/backend/src/projetos/dto/create-projeto.dto.ts
+- [X] T109 [US3] Add projetoId association logic to DocumentosService.create() and update() methods
 
 #### Frontend: Sidebar Project Tree
 
-- [ ] T110 [P] [US3] Create projects Zustand store in apps/web/src/stores/projects.store.ts managing project list and expanded state
-- [ ] T111 [P] [US3] Implement fetchProjetos(), createProjeto(), updateProjeto(), deleteProjeto() actions in projects store
-- [ ] T112 [P] [US3] Create LeftSidebar component in apps/web/src/components/sidebar/LeftSidebar.tsx with collapsible structure
-- [ ] T113 [P] [US3] Create ProjectTree component in apps/web/src/components/sidebar/ProjectTree.tsx rendering hierarchical list
-- [ ] T114 [P] [US3] Create ProjectItem component in apps/web/src/components/sidebar/ProjectItem.tsx with expand/collapse toggle
-- [ ] T115 [P] [US3] Create DocumentItem component in apps/web/src/components/sidebar/DocumentItem.tsx with status icon (Circle, Clock, CheckCircle2)
-- [ ] T116 [US3] Implement project color badge rendering using Tailwind dynamic colors
-- [ ] T117 [US3] Implement expand/collapse animation using Tailwind transitions
-- [ ] T118 [US3] Add "+" button in sidebar header opening CreateProjectDialog
-- [ ] T119 [US3] Create CreateProjectDialog component in apps/web/src/components/sidebar/CreateProjectDialog.tsx with nome, cor, descricao fields
-- [ ] T120 [US3] Implement color picker in CreateProjectDialog using shadcn Popover + color swatches
+- [X] T110 [P] [US3] Create projects Zustand store in apps/web/src/stores/projects.store.ts managing project list and expanded state
+- [X] T111 [P] [US3] Implement fetchProjetos(), createProjeto(), updateProjeto(), deleteProjeto() actions in projects store
+- [X] T112 [P] [US3] Create LeftSidebar component in apps/web/src/components/sidebar/LeftSidebar.tsx with collapsible structure
+- [X] T113 [P] [US3] Create ProjectTree component in apps/web/src/components/sidebar/ProjectTree.tsx rendering hierarchical list
+- [X] T114 [P] [US3] Create ProjectItem component in apps/web/src/components/sidebar/ProjectItem.tsx with expand/collapse toggle
+- [X] T115 [P] [US3] Create DocumentItem component in apps/web/src/components/sidebar/DocumentItem.tsx with status icon (Circle, Clock, CheckCircle2)
+- [X] T116 [US3] Implement project color badge rendering using Tailwind dynamic colors
+- [X] T117 [US3] Implement expand/collapse animation using Tailwind transitions
+- [X] T118 [US3] Add "+" button in sidebar header opening CreateProjectDialog
+- [X] T119 [US3] Create CreateProjectDialog component in apps/web/src/components/sidebar/CreateProjectDialog.tsx with nome, cor, descricao fields
+- [X] T120 [US3] Implement color picker in CreateProjectDialog using shadcn Popover + color swatches
 - [ ] T121 [US3] Connect DocumentItem click handler to load documento in main content area
 - [ ] T122 [US3] Add project selector dropdown to "Novo ETP" modal for associating document to project
 
