@@ -1,8 +1,8 @@
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, AlertCircle, AlertTriangle } from 'lucide-react';
 
 /**
- * T138: SectionSelector component
- * Shows 9 sections of ETP document for navigation
+ * T138, T169: SectionSelector component
+ * Shows 9 sections of ETP document for navigation with validation indicators
  */
 interface Section {
   id: string;
@@ -10,10 +10,18 @@ interface Section {
   numero: string;
 }
 
+interface ValidationStatus {
+  hasCriticalErrors: boolean;
+  hasWarnings: boolean;
+  errorCount: number;
+  warningCount: number;
+}
+
 interface SectionSelectorProps {
   sections: Section[];
   activeSection: string;
   onSelectSection: (sectionId: string) => void;
+  sectionValidations?: Record<string, ValidationStatus>; // T169: Validation status per section
 }
 
 const DEFAULT_SECTIONS: Section[] = [
@@ -48,6 +56,7 @@ export function SectionSelector({
   sections = DEFAULT_SECTIONS,
   activeSection,
   onSelectSection,
+  sectionValidations = {}, // T169: Validation data
 }: SectionSelectorProps) {
   return (
     <div className="w-64 border-r border-neutral-200 bg-neutral-50 overflow-y-auto">
@@ -61,6 +70,7 @@ export function SectionSelector({
       <nav className="p-2">
         {sections.map((section) => {
           const isActive = section.id === activeSection;
+          const validation = sectionValidations[section.id]; // T169: Get validation status
 
           return (
             <button
@@ -89,6 +99,30 @@ export function SectionSelector({
               </span>
 
               <span className="flex-1 text-sm">{section.titulo}</span>
+
+              {/* T169: Show validation indicators */}
+              {validation && (
+                <div className="flex items-center gap-1 flex-shrink-0">
+                  {validation.hasCriticalErrors && (
+                    <div 
+                      className="flex items-center gap-1 text-red-600" 
+                      title={`${validation.errorCount} erro(s) crítico(s)`}
+                    >
+                      <AlertCircle className="h-4 w-4" />
+                      <span className="text-xs">{validation.errorCount}</span>
+                    </div>
+                  )}
+                  {validation.hasWarnings && !validation.hasCriticalErrors && (
+                    <div 
+                      className="flex items-center gap-1 text-amber-600" 
+                      title={`${validation.warningCount} alerta(s)`}
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-xs">{validation.warningCount}</span>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {isActive && <ChevronRight className="h-4 w-4 flex-shrink-0" />}
             </button>

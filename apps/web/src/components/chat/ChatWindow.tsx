@@ -5,6 +5,8 @@ import { ProgressBar } from './ProgressBar';
 import { GenerationModal } from '../generation/GenerationModal';
 import { socketService } from '../../services/socket.service';
 import { useDocumentsStore } from '../../stores/documents.store';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
+import { Button } from '../ui/button';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -204,7 +206,9 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
     socketService.emit('iniciar_coleta', { documentoId });
   };
 
-  // T097: Handle "Gerar ETP" button click
+  // T097, T168: Handle "Gerar ETP" button click with warning for non-critical alerts
+  const [showWarningDialog, setShowWarningDialog] = useState(false);
+  
   const handleGerarETP = () => {
     if (!isConnected) {
       alert('Não conectado ao servidor. Tentando reconectar...');
@@ -226,6 +230,19 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
       return;
     }
 
+    // T168: Show warning if there are non-critical alerts
+    const hasAlerts = validationSummary?.alertas && validationSummary.alertas.length > 0;
+    if (hasAlerts && !showWarningDialog) {
+      setShowWarningDialog(true);
+      return;
+    }
+
+    // Proceed with generation
+    proceedWithGeneration();
+  };
+
+  const proceedWithGeneration = () => {
+    setShowWarningDialog(false);
     // Emit gerar_documento event
     socketService.emit('gerar_documento', { documentoId });
   };
@@ -317,6 +334,49 @@ export function ChatWindow({ documentoId, onColetaCompleta }: ChatWindowProps) {
         onClose={() => setShowGenerationModal(false)}
         documentoUuid={documentoId}
       />
+
+      {/* T168: Warning dialog for non-critical alerts */}
+      <Dialog open={showWarningDialog} onOpenChange={setShowWarningDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-amber-600">
+              ⚠️ Alertas de Validação Detectados
+            </DialogTitle>
+            <DialogDescription className="space-y-3">
+              <p>
+                O documento possui alguns alertas de validação que não impedem a geração,
+                mas podem indicar possíveis problemas de conformidade legal:
+              </p>
+              {validationSummary?.alertas && validationSummary.alertas.length > 0 && (
+                <ul className="list-disc list-inside text-sm space-y-1 text-neutral-700">
+                  {validationSummary.alertas.slice(0, 3).map((alerta: string, idx: number) => (
+                    <li key={idx}>{alerta}</li>
+                  ))}
+                  {validationSummary.alertas.length > 3 && (
+                    <li className="font-medium">
+                      ...e mais {validationSummary.alertas.length - 3} alerta(s)
+                    </li>
+                  )}
+                </ul>
+              )}
+              <p className="text-sm font-medium">
+                Deseja prosseguir com a geração mesmo assim?
+              </p>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowWarningDialog(false)}>
+              Cancelar
+            </Button>
+            <Button 
+              onClick={proceedWithGeneration}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              Sim, Gerar Mesmo Assim
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

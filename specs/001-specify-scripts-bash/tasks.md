@@ -315,8 +315,8 @@
 - [X] T165 [US5] Add socket listener for 'validacao_completa' event updating compliance panel after data confirmation
 - [X] T166 [US5] Add socket listener for 'alerta_secao' event appending real-time alerts during generation
 - [X] T167 [US5] Disable "Gerar ETP" button if errosCriticos.length > 0 (critical errors block generation)
-- [ ] T168 [US5] Show warning toast if generation attempted with alertas but no errosCriticos (allow with confirmation)
-- [ ] T169 [US5] Highlight sections with validation issues in SectionSelector using red/yellow indicators
+- [X] T168 [US5] Show warning toast if generation attempted with alertas but no errosCriticos (allow with confirmation)
+- [X] T169 [US5] Highlight sections with validation issues in SectionSelector using red/yellow indicators
 
 **Checkpoint**: All 5 user stories complete - system fully functional with legal compliance tracking
 
